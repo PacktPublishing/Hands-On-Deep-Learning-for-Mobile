@@ -45,15 +45,13 @@ def read(dataset = "train", path = data_dir):
         print("Not supported")
         sys.exit()
 
-    flbl = open(fname_lbl, 'rb')
-    magic_nr, size = struct.unpack(">II", flbl.read(8))
-    lbl = array("b", flbl.read())
-    flbl.close()
+    with open(fname_lbl, 'rb') as flbl:
+        magic_nr, size = struct.unpack(">II", flbl.read(8))
+        lbl = array("b", flbl.read())
 
-    fimg = open(fname_img, 'rb')
-    magic_nr, size, rows, cols = struct.unpack(">IIII", fimg.read(16))
-    img = array("B", fimg.read())
-    fimg.close()
+    with open(fname_img, 'rb') as fimg:
+        magic_nr, size, rows, cols = struct.unpack(">IIII", fimg.read(16))
+        img = array("B", fimg.read())
 
     return lbl, img, size, rows, cols
 
