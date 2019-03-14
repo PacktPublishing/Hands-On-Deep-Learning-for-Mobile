@@ -3,6 +3,8 @@
 Application based of sample Java Android demo application from Tensorflow GitHub:
 https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/java/demo
 
+![TFLite Inference in Action on a Smartphone]("inference_on_smartphone_in_action.jpg")
+
 A simple Android example that demonstrates hosting TFLite model in an android application.
 Default use case is image classification using real time came images.
 
