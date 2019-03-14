@@ -1,4 +1,4 @@
-# TF Lite Android Image Classifier App Example
+# Android application to host TFLite models and evaluate performance
 
 Application based of sample Java Android demo application from Tensorflow GitHub:
 https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/java/demo
