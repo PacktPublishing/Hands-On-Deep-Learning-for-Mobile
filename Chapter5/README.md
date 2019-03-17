@@ -5,6 +5,8 @@ This chapter will continue the EMNIST example along with new examples for smile 
 ## Environment Setup
 Use `conda create -n <<name_of_env>> -f conda_env.yml` to create your environment. It is *highly* recommended to use a virtual environment.
 
+Note: Maybe just reuse the Chapter 1 conda env file?
+
 ## Key Files
  We will reuse data from `../Chapter1/data` directory for EMNIST. For smile detection, a new data set will be used. TODO: Pls put details here.
  
