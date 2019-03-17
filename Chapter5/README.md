@@ -8,3 +8,5 @@ Use `conda create -n <<name_of_env>> -f conda_env.yml` to create your environmen
 ## Key Files
  We will reuse data from `../Chapter1/data` directory for EMNIST. For smile detection, a new data set will be used. TODO: Pls put details here.
  
+## App Instructions
+<tbd>
