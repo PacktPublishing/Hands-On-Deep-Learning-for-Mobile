@@ -13,5 +13,5 @@ Note: Maybe just reuse the Chapter 1 conda env file?
  TODO: Pls put details here.
  
 ## App Instructions
-<TODO>
+TODO
  
