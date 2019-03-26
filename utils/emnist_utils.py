@@ -30,7 +30,7 @@ def read_emnist(images_path, labels_path):
 
 
 # Lets read the labels so that directories can be named appropriately
-def map_emnist_labels(label_mappings="../chap1/data/emnist-bymerge-mapping.txt"):
+def map_emnist_labels(label_mappings="../Chapter1/data/emnist-bymerge-mapping.txt"):
     labels_dict = {}
     with open(label_mappings, 'rb') as f:
         # each row of the file has the label first and ascii code next
@@ -100,4 +100,15 @@ def plot_confusion_matrix(confusion, labels):
 
     fig.tight_layout()
 
+    plt.show()
+
+
+# Generates a plot showing changes to accuracy anf loss over training
+# Inputs: the output of the model.fit function
+def plot_training_history(history):
+    # Visualize the training
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['loss'])
+    plt.legend(['accuracy', 'loss'], loc='upper right')
+    plt.xlabel('epoch')
     plt.show()
