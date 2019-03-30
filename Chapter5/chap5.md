@@ -54,7 +54,9 @@ Talk about Deployment considerations.
 ## Mobile Optimization Part I
 Show how to save and convert to mobile format. talk about building object detection to read lines of text from camera.
 
-## Object Dection using CNN? (check what yolo uses)
+## Object Dection / Landmark 
+using CNN? (check what yolo uses)
+Check from this article: https://blog.netcetera.com/face-recognition-using-one-shot-learning-a7cf2b91e96c
 see if we can isolate characters from a line of text.
 
 ### Detecting characters from a line of text from mobile Camera
@@ -65,7 +67,9 @@ see if we can isolate characters from a line of text.
   
   
   ## Questions
-  1. You may have noticed that the number of trainable parameters have increased significantly when using a CNN. You may wonder if adding more dense layers which lead to same number of trainable parameters would lead to similar accuracy. This is a good exercise to try. Try two architectures:
+  
+  1. What are the two key properties of a CNN that make them so effective at computer vision tasks?
+  2. You may have noticed that the number of trainable parameters have increased significantly when using a CNN. You may wonder if adding more dense layers which lead to same number of trainable parameters would lead to similar accuracy. This is a good exercise to try. Try two architectures:
        - Deeper: Add more layers rather than units in the layers
        - Wider: Add more units in the layers than adding more layers
-       and see what you learn about how these networks perform. 
+       and see what you learn about how these networks perform.     
