@@ -2,7 +2,7 @@
 
 Computer vision is a very exciting and challenging field. While research on computer vision has been happening for decades, deep learning has driven the most recent advances providing order of magnitude improvements since 2012. In fact, in 2015, deep learning based models surpassed human accuracy at classification tasks. Convolutional Neural Networks or CNNs are the main model architecture that has driven this improvements. It is widely used in the industry today. From tagging friends in photos to detecting fractures x-ray, there are a lot of applications for computer vision. We will continue the EMNIST example from Chapter 1 and see how it's accuracy can be increased. Specifically, this chapter will:
 
-    * Understand keycomputer vision application areas
+    * Understand key computer vision application areas
     * Explain architecture of Convolutional Neural Networks and build examples
     * Use regularization techniques to improve generalization of models
     * Detect objects and landmarks in images
@@ -21,13 +21,13 @@ ToC
 
 ## Convolutional Neural Networks for Classification
  -
-overview of inspiration from visual cortex. Talk about translation invariance and scaling? (check in litreature of the two properties of cnn).
+overview of inspiration from visual cortex. Talk about translation invariance and scaling? (check in literature of the two properties of cnn).
 
  ### Filters and Convolutions
   - intuition behind filters like detecting lines or edges
   - show simple example of edge detection filter using a 3x3 applied to a sample EMNIST image
   - generalise to show we can learn different types of such filters
-  - highlight that the key here is building better heirarchical features
+  - highlight that the key here is building better hierarchical features
   - explain convolution math to explain how to compute padding/no padding etc
 
   ### Pooling
@@ -50,11 +50,13 @@ overview of inspiration from visual cortex. Talk about translation invariance an
   - show how weights are shifting in dense layers maybe?
   - Show case training and test errors
 
+Activation atlas: https://distill.pub/2019/activation-atlas/
+
 ## Generalization through Regularization
 The art of minimizing the difference between training and test error.  what is the difference between optimization and machine learning? Explain the purpose of regularization. Talk about constraining weights through L2 norms for dense networks. But say focus is on two specific methods used in CNN - Drop Out and BatchNorm.
 
 ### Drop Out
-Intuitiuon behind drop out, forcing units to do more work on learning relationships, not depending on everything being present.
+Intuition behind drop out, forcing units to do more work on learning relationships, not depending on everything being present.
  Add to the code and see the difference.
  Explain how to build code so that drop out is used only in training and not in inference.
 
