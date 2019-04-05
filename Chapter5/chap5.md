@@ -99,12 +99,48 @@ Next two section describe the concepts of convolutions and pooling in detail. Th
 
 ![Figure 5-7: Convolution calculation](images/chap5-convolution.png "Figure 5-7: Convolution example")
 
-To see how this works, open up <TODO: put ipynb file here> and run the following pieces of code.
+To see how this works, open up `convolution_arithmetic.ipynb` and run the following pieces of code. To see the impact of the Sobel filter defined above, we will use an image from the author's collection.
 
-<TODO: Insert code here>
+> Info box: This code example requires installation of Pillow image management library in Python. Installation in `conda` environment can be done through `$ conda install Pillow` . `scipy.signal` provides a `convolve2d` function which is used to implement this example. Example file used can be found in `githubrepo/Chapter5/images/chap5-tulip.jpg`.
 
-  - intuition behind filters like detecting lines or edges
-  - show simple example of edge detection filter using a 3x3 applied to a sample EMNIST image
+```
+# Load the image from the directory
+tulip = Image.open("images/chap5-tulip.jpg")
+
+#convert to gray scale image
+tulip_grey = tulip.convert('L')
+tulip_ar = np.array(tulip_grey)
+
+# show the image
+plt.imshow(tulip_grey)
+```
+
+These lines load the image, convert into grayscale and put it into a Numpy array. Next, the two filters shown above are defined.
+
+```
+kernel_1 = np.array([[-1, 0, 1],
+                   [-1, 0, 1],
+                   [-1, 0, 1]])   # Vertical edge detection kernel / filter
+kernel_2 = np.array([[-1, -1, -1],
+                   [0, 0, 0],
+                   [1, 1, 1]])   # Horizontal edge detection kernel / filter
+```
+
+Now, to compute the result and visualize it, run the following piece of code.
+
+```
+from scipy.signal import convolve2d
+out1 = convolve2d(tulip_ar, kernel_1)  # vertical filter output
+out2 = convolve2d(tulip_ar, kernel_2)  # horizontal filter output
+```
+
+This will produce an output as shown in Fig 5-8.
+
+![Figure 5-8: Result of Sobel filter for detecting edges using convolutions](images/chap5-tulip-edge-detection.png "Figure 5-8: Result of Sobel filter for detecting edges using convolutions")
+
+One of the challenges in computer vision was to understand and hand-construct these filters. In CNNs, these filter parameters are learnt automatically. Secondly, multiple filters are stacked on top of each other to create multiple outputs for the same input pixels. The idea here is to learn different types of representations in terms of simple and complex units through these stacked filters. 
+
+
   - generalise to show we can learn different types of such filters
   - highlight that the key here is building better hierarchical features
   - explain convolution math to explain how to compute padding/no padding etc
