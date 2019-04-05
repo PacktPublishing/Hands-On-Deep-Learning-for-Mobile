@@ -73,10 +73,36 @@ In Chapter 8, we will unsupervised networks like Generative Adversarial Network 
 Now that you have a good overview of the exciting application areas in computer vision, lets start working on the first of these - image classification. We will start with understanding Convolutional Neural Networks (CNN) architecture, and build a new classifier for EMNIST using this architecture.
 
 ## Convolutional Neural Networks for Classification
- -
-overview of inspiration from visual cortex. Talk about translation invariance and scaling? (check in literature of the two properties of cnn).
+CNNs were inspired by the work of neurophysiologists David Hubel and Torsten Weisel, who eventually won a Nobel Prize. Their work put forth theories on how the *primary visual cortex* functions in the mammalian brain. Signals that stimulate the retina result in simple pre-processing and then these signals are transferred to the primary visual cortex at the back of the head. These signals, as they move through layers of the brain and processed, follow the following structure:
+
+* A sense of a 2-dimensional or spatial map is preserved about the image
+* Simpler cells do simple detections like edges, curves, and colors. These cells work on small localized areas of the spatial map
+* Complex cells aggregate inputs from the simpler cells to detect higher level concepts like faces. These cells have some resistance to the position of an object (like a face, or a car) in an image. As complex cells aggregate or *pool* inputs, they can also become immune to changes in contrast or lighting.
+
+CNNs emulate these key properties of the visual cortex in the following ways:
+* Hierarchical representation: Recall from Chapter 1 that use of multiple layers in a deep learning network results in a hierarchical representation of features. This emulates the behaviour of layers of simple and complex cells. Complex cells, or units in the later layers of the network take inputs of neighbouring units for aggregation or *pooling*.
+* Convolutions for locality sensitivity: In a spatial map of the image, consider a random pixel. Chances are the pixels  left, right, up, down and diagonally around that pixel are highly correlated to that pixel. This property of *locality sensitivity* is very important. Recall that in our first EMNIST model, all the pixels were fed in to the network with no notion of similarity between adjacent or close pixels. Structure of image data allows such locality sensitivity to be exploited through *convolutions*. Convolutions are described in more detail in the next section.
+* Translation Invariance: This is a key property which allows the object to be detected to be located in different places in the image and yet be classified. Fig 5-6 shows an example of translation invariance to illustrate the concept. This property allows labels to be associated with entire images, instead of identifying the exact location of the object in the image.  While this simplifies collection of data sets and training, it is crucial for the widespread success of CNNs. It enables the actual test images to differ from the training images in terms of the position of the object and still be able to detect it.  
+
+![Figure 5-6: Translation invariance](images/chap5-translation-invariance.png "Figure 5-6: Translation Invariance"
+)
+Next two section describe the concepts of convolutions and pooling in detail. These two are the core concepts of CNN architectures.
 
  ### Filters and Convolutions
+ In traditional computer vision prior to the advent of deep learning, filters were used to detect features like edges. These filters were hand crafted by scientists and engineers. Output of these features was used to feed into successive machine learning algorithms to aid in detection. Usually, these filters are 3x3 or 5x5 matrices that are *convolved* with the image to produce a resultant image. The convolution example shall be illustrated with code. As an example, consider the Sobel Filter. This filter can be used to detect horizontal and vertical edges.
+
+ $$ G_{vertical} = \begin{bmatrix} -1 & 0 & +1 \\ -2 & 0 & +2 \\ -1 & 0 & +1 \end{bmatrix} * X $$
+
+  $$ G_{horizontal} = \begin{bmatrix} -1 & -2 & -1 \\ 0 & 0 & 0 \\ +1 & +2 & +1 \end{bmatrix} * X $$
+
+\* represents the convolution operation. $G_{vertical}$ represents a vertical edge detection filter while $G_{horizontal}$ can be used to detect horizontal edges. These filters are also called *kernels*, *masks* or *convolution matrix*. *X* contains the pixels of the input image represented as a 2D matrix. Fig 5-7 below shows the calculation on an example for one cell of the output matrix. The convolutional matrix or the kernel is moved over the input left to right and top to bottom as indicated by the arrows.
+
+![Figure 5-7: Convolution calculation](images/chap5-convolution.png "Figure 5-7: Convolution example")
+
+To see how this works, open up <TODO: put ipynb file here> and run the following pieces of code.
+
+<TODO: Insert code here>
+
   - intuition behind filters like detecting lines or edges
   - show simple example of edge detection filter using a 3x3 applied to a sample EMNIST image
   - generalise to show we can learn different types of such filters
