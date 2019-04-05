@@ -1,23 +1,46 @@
 # Chapter 5: Convolutional Neural Networks
 
-Computer vision is a very exciting and challenging field. While research on computer vision has been happening for decades, deep learning has driven the most recent advances providing order of magnitude improvements since 2012. In fact, in 2015, deep learning based models surpassed human accuracy at classification tasks. Convolutional Neural Networks or CNNs are the main model architecture that has driven this improvements. It is widely used in the industry today. From tagging friends in photos to detecting fractures x-ray, there are a lot of applications for computer vision. We will continue the EMNIST example from Chapter 1 and see how it's accuracy can be increased. Specifically, this chapter will:
+Computer vision is a very exciting and challenging field. While research on computer vision has been happening for decades, deep learning has driven the most recent advances providing order of magnitude improvements since 2012. In fact, in 2015, deep learning based models surpassed human accuracy at classification tasks. Convolutional Neural Network or CNN is the main model architecture that has driven these improvements. It is widely used in the industry today. From tagging friends in photos to detecting fractures x-ray, there are lots of applications for computer vision. We will continue the EMNIST example from Chapter 1 and see how CNNs can increase accuracy.  Specifically, this chapter will:
 
-    * Understand key computer vision application areas
-    * Explain architecture of Convolutional Neural Networks and build examples
-    * Use regularization techniques to improve generalization of models
-    * Detect objects and landmarks in images
-    *
-<<tbd add outline of chapter from Packt>>
+  * Understand key computer vision application areas
+  * Explain the architecture of Convolutional Neural Networks and build examples
+  * Use regularization techniques to improve generalization of models
+  * Detect objects and landmarks in images
+  * // Include page numbers for ease of reference
+
 
 # Technical Requirements
+This chapter uses Python, TensorFlow 2.0, Jupyter Notebooks for building and training the models. Data files from training are reused from Chapter 1 Github location. All the code for this chapter is in <Github-Repo>/Chapter5.
+
+For the mobile application pieces, an iOS-based mobile app will be built. It will be developed using XCode running on MacOS 10.13.6 or above. The models developed will be converted for mobile use as demonstrated in previous chapters, using TensorFlow Lite. Further, MLKit, part of Firebase, will be used to put the trained model into the app.
 // list technologies and installations required here.
 
 // Provide Github URL for the code in the chapter (setup instructions should be on the Github page). Create a Github folder named, "chX", where X is the chapter number. For example, ch1
 
-ToC
+# H1: Computer Vision Application Areas
+Before building deep learning networks for computer vision tasks, it would useful to get an overview of key problems in this area. Main areas of interest in computer vision, amongst others, are:
+* Image classification
+* Object detection
+* Landmark detection or keypoint detection
+* Image labelling and captioning
+* Super Resolution
 
-## Computer Vision Applications
-- get from medium article
+## H2 Image Classification
+Interest in application of deep learning in computer vision started with massive gains evidenced in the ImageNet Large Scale Visual Recognition Challenge (ILSVRC). Figure 5-1 below shows the improvements with the arrival of deep learning in 2012 with the landmark AlexNet paper.
+![Figure 5-1: Improvements in Top-5 Classification Rates](images/chap5-ilsvrc_error_rates.png "Figure 5-1: Improvements in ILSVRC Top-5 Classification Rates")
+Note the huge drop of about 10% between 2011 and 2012 results. This was the advent of deep learning techniques to image recognition. Prior to this, there were very small movements in accuracy. In 2015, CNNs surpassed human level accuracy of 5.1%.
+
+> Info Box: Top-5 Classification Error rate: this measures whether the actual label for a given image was one of the top 5 labels predicted by the model.
+
+In fact, this particular challenge has been retired since 2017 given that human level performance has been surpassed.
+
+## H2 Object Detection
+This is a very important aspect of computer vision, being in focus due to interest and advances in self-driving or autonomous vehicles. Objective here is to identify key objects in an image. I t can be applied to videos as well, by parsing a frame at a time. An example is shown in Fig 5-2 below.
+
+![Figure 5-2: Object Detection](images/chap5-1600px-Detected-with-YOLO--Schreibtisch-mit-Objekten.jpg "Figure 5-2: Object Detection")
+
+ImageNet mentioned above has moved to this as the key benchmark for reporting progress now. This is a complex task as objects may be partially occluded and of different sizes and orientations. Further, for use in autonomous vehicles, the models used must be very fast. This would allow multiple frames of the video to be processed every second leading to higher reliability and safety of the vehicle.
+
 
 ## Convolutional Neural Networks for Classification
  -
