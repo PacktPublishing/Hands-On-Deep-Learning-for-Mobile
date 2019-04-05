@@ -23,7 +23,7 @@ Before building deep learning networks for computer vision tasks, it would usefu
 * Object detection
 * Landmark detection or keypoint detection
 * Image labelling and captioning
-* Super Resolution
+* Super Resolution and Compression
 
 ## H2 Image Classification
 Interest in application of deep learning in computer vision started with massive gains evidenced in the ImageNet Large Scale Visual Recognition Challenge (ILSVRC). Figure 5-1 below shows the improvements with the arrival of deep learning in 2012 with the landmark AlexNet paper.
@@ -66,8 +66,11 @@ Source: https://ai.googleblog.com/2016/09/show-and-tell-image-captioning-open.ht
 
 Chapter 7 of this book is devoted to this application area and will cover it in detail.
 
-## H2: Super Resolution
+## H2: Super Resolution and Compression
+Objective of these types of computer vision tasks are to either compress the image to a small size and then reconstruct the high resolution image on the different device, or to take an image and increase it's resolution and level of detail at the same time. There are additional use cases in converting an image with low detail, possibly shot during low light or night scene and add detail to it.
+In Chapter 8, we will unsupervised networks like Generative Adversarial Network (GAN) and Auto-encoders to perform this task. Image compression is especially useful in mobile settings as it can save bandwidth for communication while not comprising on quality.
 
+Now that you have a good overview of the exciting application areas in computer vision, lets start working on the first of these - image classification. We will start with understanding Convolutional Neural Networks (CNN) architecture, and build a new classifier for EMNIST using this architecture.
 
 ## Convolutional Neural Networks for Classification
  -
