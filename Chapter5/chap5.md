@@ -32,7 +32,9 @@ Note the huge drop of about 10% between 2011 and 2012 results. This was the adve
 
 > Info Box: Top-5 Classification Error rate: this measures whether the actual label for a given image was one of the top 5 labels predicted by the model.
 
-In fact, this particular challenge has been retired since 2017 given that human level performance has been surpassed.
+In fact, this particular challenge has been retired since 2017 given that human level performance has been surpassed and replaced with object detection described below.
+
+EMNIST is an image classification task. We will build a better image classification model using CNNs in this chapter.
 
 ## H2 Object Detection
 This is a very important aspect of computer vision, being in focus due to interest and advances in self-driving or autonomous vehicles. Objective here is to identify key objects in an image. I t can be applied to videos as well, by parsing a frame at a time. An example is shown in Fig 5-2 below.
@@ -40,6 +42,31 @@ This is a very important aspect of computer vision, being in focus due to intere
 ![Figure 5-2: Object Detection](images/chap5-1600px-Detected-with-YOLO--Schreibtisch-mit-Objekten.jpg "Figure 5-2: Object Detection")
 
 ImageNet mentioned above has moved to this as the key benchmark for reporting progress now. This is a complex task as objects may be partially occluded and of different sizes and orientations. Further, for use in autonomous vehicles, the models used must be very fast. This would allow multiple frames of the video to be processed every second leading to higher reliability and safety of the vehicle.
+
+We will build an object detection network later in this chapter to detect character bounding boxes in an image and hook it up to the EMNIST detection model to recognize them.
+
+## H2: Landmark Detection or Keypoint Detection
+A key point or a landmark marks an important part or feature of an image. If the image is of a face, then these can be different facial features like eyebrows, eyes, nose, lips etc. Fig 5-3 shows an example from Google's MLKit.
+Later in this chapter, we will try to build an app that takes selfies based on how wide a person is smiling. *TODO: See if it is feasible*
+
+![Figure 5-3: Facial Landmark Detection](images/chap5-face_contours.svg "Figure 5-3: Facial Landmark Detection")
+(Image source: https://firebase.google.com/docs/ml-kit/detect-faces, CC 3.0 permissive license)
+
+TODO: https://webrtchacks.com/ml-kit-smile-detection/
+
+In other applications, human poses can also be marked. This is a key development used in motion capture techniques that are used in movies and animations. most notable movie that used this live motion capture technique is Avatar directed by James Cameron. Similar techniques were used by Microsoft Kinect to understand human poses to control video games.
+
+![Figure 5-4: Author's image with pose](images/chap5-post-estimation.png "Figure 5-4: Pose estimation of Author cheering for you")
+
+
+## H2: Image Captioning and labelling
+This is a very exciting development in the world of deep learning. It combines two areas, namely computer vision and natural language process (NLP). The task is to generate human readable labels given an image. It can be used to convert images into textual features and answer arbitrary questions about objects in the image. It can be used as an assistive technology for visually impaired persons. Applications are endless. This is a very complex field that is an active area of research.
+![Figure 5-5: Image captioning from Google AI Blog](images/chap5-google-ai-blog-image-caption.png "Figure 5-5: Image captioning from Google AI Blog")
+Source: https://ai.googleblog.com/2016/09/show-and-tell-image-captioning-open.html
+
+Chapter 7 of this book is devoted to this application area and will cover it in detail.
+
+## H2: Super Resolution
 
 
 ## Convolutional Neural Networks for Classification
