@@ -86,7 +86,10 @@ CNNs emulate these key properties of the visual cortex in the following ways:
 
 ![Figure 5-6: Translation invariance](images/chap5-translation-invariance.png "Figure 5-6: Translation Invariance"
 )
-Next two section describe the concepts of convolutions and pooling in detail. These two are the core concepts of CNN architectures.
+
+While we have been using 2 dimensional images as the main use case, these concepts generally apply to one dimensional data, such as an audio signal or a time series equally. It is important to see if a given problem has translation invariance and locality sensitivity properties. If it does, then CNNs would be a great fit for that problem.
+
+Next two sections describe the concepts of convolutions and pooling in detail. These two are the core concepts of CNN architectures.
 
  ### Filters and Convolutions
  In traditional computer vision prior to the advent of deep learning, filters were used to detect features like edges. These filters were hand crafted by scientists and engineers. Output of these features was used to feed into successive machine learning algorithms to aid in detection. Usually, these filters are 3x3 or 5x5 matrices that are *convolved* with the image to produce a resultant image. The convolution example shall be illustrated with code. As an example, consider the Sobel Filter. This filter can be used to detect horizontal and vertical edges.
@@ -138,7 +141,35 @@ This will produce an output as shown in Fig 5-8.
 
 ![Figure 5-8: Result of Sobel filter for detecting edges using convolutions](images/chap5-tulip-edge-detection.png "Figure 5-8: Result of Sobel filter for detecting edges using convolutions")
 
-One of the challenges in computer vision was to understand and hand-construct these filters. In CNNs, these filter parameters are learnt automatically. Secondly, multiple filters are stacked on top of each other to create multiple outputs for the same input pixels. The idea here is to learn different types of representations in terms of simple and complex units through these stacked filters. 
+Figure 5-8: Result of Sobel filter for detecting edges using convolutions
+
+One of the challenges in computer vision earlier was  hand-constructing these filters. In CNNs, these filter parameters are learnt automatically. Secondly, multiple filters are stacked on top of each other to create multiple outputs for the same input pixels. The idea here is to learn different types of representations in terms of simple and complex units through these stacked filters. Just like weights were learned in a fully connected network, the values for these filters are learned in CNN architectures.
+
+
+
+There are some key hyper parameters used in convolutional layers that need to be chosen:
+  * *Filter depth*: This is the number of filters that are evaluated at a particular layer. For example, if the horizontal and vertical filters above are stacked together, then this would give a depth of 2.
+  * *Kernel size*: In the Sobel filter above, the kernel size was 3x3. However, different kernel sizes like 5x5, 7x7 or 11x11 can also be used.
+  * *Stride size*: In the previous example, the filter was moved one pixel at time to the right and down. These values can be changed. Having larger stride size reduces computational and memory requirements and may help bring further apart features together in higher layers.
+  * *Padding*: It seems that kernel strides are limited by the  bounds of the image. However, it is possible to pad the edges of the image to allow different stride sizes and resulting image sizes. There are two common settings for paddings:
+    - Same: This padding ensures that the result has the same number of values as the input. This is shown in Fig 5-9.
+    - Valid: This is same as saying no padding. In this case, the result of the computation has fewer values than input, as shown in Fig 5-10.
+
+
+![Figure 5-9: Stride size 1 and same padding fo convolution](images/chap5-same-padding-unit-stride.png)
+Figure 5-9: Stride size 1 and same padding for convolution
+(Source: https://github.com/vdumoulin/conv_arithmetic)
+![Figure 5-10: Stride size 1 and valid padding for convolution](images/chap5-unit-strides-valid-padding.png)
+Figure 5-10: Stride size 1 and valid padding for convolution
+(Source: https://github.com/vdumoulin/conv_arithmetic)
+
+
+> Infobox: *A guide to convolutional arithmetic for deep learning* paper provides in depth coverage of impact and meaning of these hyper parameters. It can be found on https://arxiv.org/pdf/1603.07285.pdf
+
+*Receptive field* of a unit after convolution operation denotes the inputs that have influenced the value of that unit. By stacking multiple layers, each unit can have a wide effective receptive field, which allows CNNs to learn relationships. This idea is demonstrated in Fig 5-11. One unit in the top most orange layer is composed of inputs from a very large area in the bottom most layer. This allows the composition of simple and complex cells as explained earlier.
+![Figure 5-11: Receptive fields](images/chap5-receptive-field.png)
+(NOTE: Please redraw this image)
+
 
 
   - generalise to show we can learn different types of such filters
