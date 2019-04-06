@@ -18,7 +18,9 @@ For the mobile application pieces, an iOS-based mobile app will be built. It wil
 // Provide Github URL for the code in the chapter (setup instructions should be on the Github page). Create a Github folder named, "chX", where X is the chapter number. For example, ch1
 
 # H1: Computer Vision Application Areas
+
 Before building deep learning networks for computer vision tasks, it would useful to get an overview of key problems in this area. Main areas of interest in computer vision, amongst others, are:
+
 * Image classification
 * Object detection
 * Landmark detection or keypoint detection
@@ -26,6 +28,7 @@ Before building deep learning networks for computer vision tasks, it would usefu
 * Super Resolution and Compression
 
 ## H2 Image Classification
+
 Interest in application of deep learning in computer vision started with massive gains evidenced in the ImageNet Large Scale Visual Recognition Challenge (ILSVRC). Figure 5-1 below shows the improvements with the arrival of deep learning in 2012 with the landmark AlexNet paper.
 ![Figure 5-1: Improvements in Top-5 Classification Rates](images/chap5-ilsvrc_error_rates.png "Figure 5-1: Improvements in ILSVRC Top-5 Classification Rates")
 Note the huge drop of about 10% between 2011 and 2012 results. This was the advent of deep learning techniques to image recognition. Prior to this, there were very small movements in accuracy. In 2015, CNNs surpassed human level accuracy of 5.1%.
@@ -37,6 +40,7 @@ In fact, this particular challenge has been retired since 2017 given that human 
 EMNIST is an image classification task. We will build a better image classification model using CNNs in this chapter.
 
 ## H2 Object Detection
+
 This is a very important aspect of computer vision, being in focus due to interest and advances in self-driving or autonomous vehicles. Objective here is to identify key objects in an image. I t can be applied to videos as well, by parsing a frame at a time. An example is shown in Fig 5-2 below.
 
 ![Figure 5-2: Object Detection](images/chap5-1600px-Detected-with-YOLO--Schreibtisch-mit-Objekten.jpg "Figure 5-2: Object Detection")
@@ -46,6 +50,7 @@ ImageNet mentioned above has moved to this as the key benchmark for reporting pr
 We will build an object detection network later in this chapter to detect character bounding boxes in an image and hook it up to the EMNIST detection model to recognize them.
 
 ## H2: Landmark Detection or Keypoint Detection
+
 A key point or a landmark marks an important part or feature of an image. If the image is of a face, then these can be different facial features like eyebrows, eyes, nose, lips etc. Fig 5-3 shows an example from Google's MLKit.
 Later in this chapter, we will try to build an app that takes selfies based on how wide a person is smiling. *TODO: See if it is feasible*
 
@@ -59,7 +64,8 @@ In other applications, human poses can also be marked. This is a key development
 ![Figure 5-4: Author's image with pose](images/chap5-post-estimation.png "Figure 5-4: Pose estimation of Author cheering for you")
 
 
-## H2: Image Captioning and labelling
+## H2: Image Captioning and Labeling
+
 This is a very exciting development in the world of deep learning. It combines two areas, namely computer vision and natural language process (NLP). The task is to generate human readable labels given an image. It can be used to convert images into textual features and answer arbitrary questions about objects in the image. It can be used as an assistive technology for visually impaired persons. Applications are endless. This is a very complex field that is an active area of research.
 ![Figure 5-5: Image captioning from Google AI Blog](images/chap5-google-ai-blog-image-caption.png "Figure 5-5: Image captioning from Google AI Blog")
 Source: https://ai.googleblog.com/2016/09/show-and-tell-image-captioning-open.html
@@ -67,22 +73,25 @@ Source: https://ai.googleblog.com/2016/09/show-and-tell-image-captioning-open.ht
 Chapter 7 of this book is devoted to this application area and will cover it in detail.
 
 ## H2: Super Resolution and Compression
+
 Objective of these types of computer vision tasks are to either compress the image to a small size and then reconstruct the high resolution image on the different device, or to take an image and increase it's resolution and level of detail at the same time. There are additional use cases in converting an image with low detail, possibly shot during low light or night scene and add detail to it.
 In Chapter 8, we will unsupervised networks like Generative Adversarial Network (GAN) and Auto-encoders to perform this task. Image compression is especially useful in mobile settings as it can save bandwidth for communication while not comprising on quality.
 
 Now that you have a good overview of the exciting application areas in computer vision, lets start working on the first of these - image classification. We will start with understanding Convolutional Neural Networks (CNN) architecture, and build a new classifier for EMNIST using this architecture.
 
 ## Convolutional Neural Networks for Classification
+
 CNNs were inspired by the work of neurophysiologists David Hubel and Torsten Weisel, who eventually won a Nobel Prize. Their work put forth theories on how the *primary visual cortex* functions in the mammalian brain. Signals that stimulate the retina result in simple pre-processing and then these signals are transferred to the primary visual cortex at the back of the head. These signals, as they move through layers of the brain and processed, follow the following structure:
 
-* A sense of a 2-dimensional or spatial map is preserved about the image
-* Simpler cells do simple detections like edges, curves, and colors. These cells work on small localized areas of the spatial map
-* Complex cells aggregate inputs from the simpler cells to detect higher level concepts like faces. These cells have some resistance to the position of an object (like a face, or a car) in an image. As complex cells aggregate or *pool* inputs, they can also become immune to changes in contrast or lighting.
+  * A sense of a 2-dimensional or spatial map is preserved about the image
+  * Simpler cells do simple detections like edges, curves, and colors. These cells work on small localized areas of the spatial map
+  * Complex cells aggregate inputs from the simpler cells to detect higher level concepts like faces. These cells have some resistance to the position of an object (like a face, or a car) in an image. As complex cells aggregate or *pool* inputs, they can also become immune to changes in contrast or lighting.
 
 CNNs emulate these key properties of the visual cortex in the following ways:
-* Hierarchical representation: Recall from Chapter 1 that use of multiple layers in a deep learning network results in a hierarchical representation of features. This emulates the behaviour of layers of simple and complex cells. Complex cells, or units in the later layers of the network take inputs of neighbouring units for aggregation or *pooling*.
-* Convolutions for locality sensitivity: In a spatial map of the image, consider a random pixel. Chances are the pixels  left, right, up, down and diagonally around that pixel are highly correlated to that pixel. This property of *locality sensitivity* is very important. Recall that in our first EMNIST model, all the pixels were fed in to the network with no notion of similarity between adjacent or close pixels. Structure of image data allows such locality sensitivity to be exploited through *convolutions*. Convolutions are described in more detail in the next section.
-* Translation Invariance: This is a key property which allows the object to be detected to be located in different places in the image and yet be classified. Fig 5-6 shows an example of translation invariance to illustrate the concept. This property allows labels to be associated with entire images, instead of identifying the exact location of the object in the image.  While this simplifies collection of data sets and training, it is crucial for the widespread success of CNNs. It enables the actual test images to differ from the training images in terms of the position of the object and still be able to detect it.  
+
+  * Hierarchical representation: Recall from Chapter 1 that use of multiple layers in a deep learning network results in a hierarchical representation of features. This emulates the behaviour of layers of simple and complex cells. Complex cells, or units in the later layers of the network take inputs of neighbouring units for aggregation or *pooling*.
+  * Convolutions for locality sensitivity or sparse interactions: In a spatial map of the image, consider a random pixel. Chances are the pixels  left, right, up, down and diagonally around that pixel are highly correlated to that pixel. This property of *locality sensitivity* is very important. Conversely, it implies that connections of all units in a layer are not connected to every unit in the successive layer. This results in *sparse interactions*. Recall that in our first EMNIST model, all the pixels were fed in to the network with no notion of similarity between adjacent or close pixels. Structure of image data allows such locality sensitivity to be exploited through *convolutions*. Convolutions are described in more detail in the next section.
+  * Translation Invariance: This is a key property which allows the object to be detected to be located in different places in the image and yet be classified. Fig 5-6 shows an example of translation invariance to illustrate the concept. This property allows labels to be associated with entire images, instead of identifying the exact location of the object in the image.  While this simplifies collection of data sets and training, it is crucial for the widespread success of CNNs. It enables the actual test images to differ from the training images in terms of the position of the object and still be able to detect it.  
 
 ![Figure 5-6: Translation invariance](images/chap5-translation-invariance.png "Figure 5-6: Translation Invariance"
 )
@@ -92,6 +101,7 @@ While we have been using 2 dimensional images as the main use case, these concep
 Next two sections describe the concepts of convolutions and pooling in detail. These two are the core concepts of CNN architectures.
 
  ### Filters and Convolutions
+
  In traditional computer vision prior to the advent of deep learning, filters were used to detect features like edges. These filters were hand crafted by scientists and engineers. Output of these features was used to feed into successive machine learning algorithms to aid in detection. Usually, these filters are 3x3 or 5x5 matrices that are *convolved* with the image to produce a resultant image. The convolution example shall be illustrated with code. As an example, consider the Sobel Filter. This filter can be used to detect horizontal and vertical edges.
 
  $$ G_{vertical} = \begin{bmatrix} -1 & 0 & +1 \\ -2 & 0 & +2 \\ -1 & 0 & +1 \end{bmatrix} * X $$
@@ -145,8 +155,6 @@ Figure 5-8: Result of Sobel filter for detecting edges using convolutions
 
 One of the challenges in computer vision earlier was  hand-constructing these filters. In CNNs, these filter parameters are learnt automatically. Secondly, multiple filters are stacked on top of each other to create multiple outputs for the same input pixels. The idea here is to learn different types of representations in terms of simple and complex units through these stacked filters. Just like weights were learned in a fully connected network, the values for these filters are learned in CNN architectures.
 
-
-
 There are some key hyper parameters used in convolutional layers that need to be chosen:
   * *Filter depth*: This is the number of filters that are evaluated at a particular layer. For example, if the horizontal and vertical filters above are stacked together, then this would give a depth of 2.
   * *Kernel size*: In the Sobel filter above, the kernel size was 3x3. However, different kernel sizes like 5x5, 7x7 or 11x11 can also be used.
@@ -164,19 +172,17 @@ Figure 5-10: Stride size 1 and valid padding for convolution
 (Source: https://github.com/vdumoulin/conv_arithmetic)
 
 
-> Infobox: *A guide to convolutional arithmetic for deep learning* paper provides in depth coverage of impact and meaning of these hyper parameters. It can be found on https://arxiv.org/pdf/1603.07285.pdf
+> Infobox: *A guide to convolutional arithmetic for deep learning* paper provides in depth coverage of impact and meaning of these hyper parameters. It also provides formulae  It can be found on https://arxiv.org/pdf/1603.07285.pdf
 
 *Receptive field* of a unit after convolution operation denotes the inputs that have influenced the value of that unit. By stacking multiple layers, each unit can have a wide effective receptive field, which allows CNNs to learn relationships. This idea is demonstrated in Fig 5-11. One unit in the top most orange layer is composed of inputs from a very large area in the bottom most layer. This allows the composition of simple and complex cells as explained earlier.
 ![Figure 5-11: Receptive fields](images/chap5-receptive-field.png)
 (NOTE: Please redraw this image)
 
+After the 
+
+### Pooling
 
 
-  - generalise to show we can learn different types of such filters
-  - highlight that the key here is building better hierarchical features
-  - explain convolution math to explain how to compute padding/no padding etc
-
-  ### Pooling
 
   - why pooling? How does it help?
   - how to implement pooling in Keras etc
