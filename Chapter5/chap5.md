@@ -211,9 +211,13 @@ cnn = keras.Model(inputs=inputs, outputs=outputs, name='cnn_model_1')
 cnn.summary()
 ```
 
-Given the amount of complex theory that goes into CNNs, Keras and TensorFlow do a wonderful job of hiding this complexity and allowing ML engineers to focus on building the network. Lets analyze the code above. (1) sets up the input layer and shows that each image is 28x28\. Then, it is reshaped to 28x28x1 tensor. This is because it is a gray scale image. the added dimension just denotes the 'gray' channel. If this was a color image like RGB, then this could be reformatted into 28x28x3 to denote the three channels.
+Given the amount of complex theory that goes into CNNs, Keras and TensorFlow do a wonderful job of hiding this complexity and allowing ML engineers to focus on building the network. Lets analyze the code above. (1) sets up the input layer and shows that each image is 28x28\. Then, it is reshaped to 28x28x1 tensor. This is because it is a gray scale image. the added dimension just denotes the 'gray' channel. If this was a color image like RGB, then this could be reformatted into 28x28x3 to denote the three channels. Note that the number of channels is last in this data format. this is called `channels_last` or NHWC. Here, 'N' refers to number of data samples, 'H' refers to height of each image, 'W' is width of the image and 'C' refers to the channels. It is also possible to have data in NCHW format. `layers.reshape` method can be used to convert between these formats.
 
-This will produce an output describing the model like so:
+> Infobox: It is common mistake to not be careful with the data format sizes and get errors. Another tip: NCHW format is more efficient on NVIDIA GPUs while NHWC is more efficient for CPUs. More tips on performance can be found on <https://www.tensorflow.org/guide/performance/overview>
+
+In (2) and (3), a convolutional layer is added with 64 filters followed by a max pooling layer are added. The kernel is of size 3x3\. By default, _valid_ padding is used if a padding is not supplied. Since _stride size_ is also not provided, it is assumed as (1,1), which means 1 pixel in the right and down directions. `tf.keras.layers.Conv2D` takes many other options and you are encouraged to look into the API and play with some of these.
+
+T0 prepare these for input into the dense classification layers, (4) flattens this _volume_ of 13x13x64 into a single layer of 10,816 units. These dimensions can be verified by the summary shown below. (5) shows the two dense layers followed by an output layer. Note that this is identical to the fully connected network designed in Chapter 1\. One key point of difference is that that network took 28x28 or 784 values as inputs. Through stages of CNN, these have become over ten thousand inputs.
 
 ```
 Model: "cnn_model_1"
@@ -242,7 +246,30 @@ Non-trainable params: 0
 _________________________________________________________________
 ```
 
-There are quite a few changes here.
+Note that the summary above has a lot more parameters than the previous model. This is around 2.8 million trainable parameters compared to approximately 240 thousand parameters in the previous model. Lets compile the model and train it as show below.
+
+```
+# Lets compile the model and train it
+cnn.compile(optimizer=tf.keras.optimizers.Adam(0.001),
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+history = cnn.fit(norm_train_features, one_hot_train_labels, epochs=10, batch_size=128)
+
+Epoch 1/10
+697932/697932 [==============================] - 33s 48us/sample - loss: 0.4692 - accuracy: 0.8421
+Epoch 2/10
+697932/697932 [==============================] - 30s 43us/sample - loss: 0.3198 - accuracy: 0.8846
+\.
+\.
+\.
+Epoc 10/10
+697932/697932 [==============================] - 30s 43us/sample - loss: 0.2048 - accuracy: 0.9177
+
+# Evaluate the model on the test set
+cnn.evaluate(norm_test_features, one_hot_test_labels, 47)
+
+116323/116323 [==============================] - 5s 47us/sample - loss: 0.3395 - accuracy: 0.8888
+```
 
 - code up a simple extension to EMNIST code, introduce the utilities lib
 
