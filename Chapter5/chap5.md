@@ -211,6 +211,8 @@ cnn = keras.Model(inputs=inputs, outputs=outputs, name='cnn_model_1')
 cnn.summary()
 ```
 
+Given the amount of complex theory that goes into CNNs, Keras and TensorFlow do a wonderful job of hiding this complexity and allowing ML engineers to focus on building the network. Lets analyze the code above. (1) sets up the input layer and shows that each image is 28x28\. Then, it is reshaped to 28x28x1 tensor. This is because it is a gray scale image. the added dimension just denotes the 'gray' channel. If this was a color image like RGB, then this could be reformatted into 28x28x3 to denote the three channels.
+
 This will produce an output describing the model like so:
 
 ```
