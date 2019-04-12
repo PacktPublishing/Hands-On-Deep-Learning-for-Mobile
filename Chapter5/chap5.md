@@ -384,7 +384,11 @@ Activation atlas: <https://distill.pub/2019/activation-atlas/>
 
 ## Generalization through Regularization
 
-The art of minimizing the difference between training and test error. what is the difference between optimization and machine learning? Explain the purpose of regularization. Talk about constraining weights through L2 norms for dense networks. But say focus is on two specific methods used in CNN - Drop Out and BatchNorm.
+When the network has high capacity, it can start to memorize the training data. This makes it less effective at classifying unseen data. This is possibly the reason for the differences shown in the previous section. *Generalization* is the ability of the network to accurately classify unseen data. This ability to generalize is what makes machine and deep learning different from optimization. Optimization is closed form and operates on a known data set. It optimizes or maximizes a desired outcome given a data set. It makes no guarantees on performance of the solution on unseen data sets. However, it is key that deep learning solution generalize, otherwise it would be of severely limited applicability. *Regularization* is the process by which the solution obtained through optimization can be generalized.
+
+Process of optimization, through gradient descent and weight update, is learning the weights and biases for different units of the network. These weights are multiplied by the inputs to calculate activations. It is possible that some of the features or inputs in the training set are highly predictive. Consequently, the model will learn larger weights for them. The network will spend effort extracting signal from other weights as it would have found a solution. However, these features may be not be as predictive in the test set. The test set should ideally be drawn from the same distribution as the training set, however this assumption is not strictly true in production use cases. Now, the trained model tries to classsify the test set and will not have much success as it would put too much emphasis on some features through larger weights and consequently larger activations values. Regularization in its simplest form, is a way to constrain the weights so that they cant become too large for any input. This will force the network to discover and learn from other inputs. Typically, applying regularization reduces training accuracy, but increases test accuracy. A common technique is *L2 Regularization*, which can be applied to any network, including dense networks.
+
+ The art of minimizing the difference between training and test error. what is the difference between optimization and machine learning? Explain the purpose of regularization. Talk about constraining weights through L2 norms for dense networks. But say focus is on two specific methods used in CNN - Drop Out and BatchNorm.
 
 ### Drop Out
 
@@ -409,9 +413,9 @@ Check from this article: <https://blog.netcetera.com/face-recognition-using-one-
 ## Questions
 
 1. What are the two key properties of a CNN that make them so effective at computer vision tasks?
-2. You may have noticed that the number of trainable parameters have increased significantly when using a CNN. You may wonder if adding more dense layers which lead to same number of trainable parameters would lead to similar accuracy. This is a good exercise to try. Try two architectures:
+2. You may have noticed that the number of trainable parameters have changed significantly when using a CNN. You may wonder if adding more dense layers which lead to same number of trainable parameters would lead to similar accuracy. This is a good exercise to try. Try two architectures:
 
   - Deeper: Add more layers rather than units in the layers
   - Wider: Add more units in the layers than adding more layers and see what you learn about how these networks perform.
-
+  How do these perform on accuracy and training time?
 3. Compare the confusion matrix from the iPython notebook for the first CNN model with Fig 15 from Chapter 1\. Do you see any differences? Checkout the confusion between B-8 and O-0\. Would you expect these two to behave differently? Why or why not?
