@@ -537,6 +537,15 @@ Dropout has the amazing affect of increasing overall accuracy! Testing accuracy 
 
 ## Batch Normalization
 
+Batch normalization aims to reduce variance of the outputs coming from one layer being fed into the next layer. By reducing this variance, it acts like L2 regularization which attempts the same thing by adding penalties on the weights to the cost or loss. Main motivation is to efficiently back-propagate gradient updates through as large number of layers while minimizing the risk that this update could result in divergence. In stochastic gradient descent, gradients calculated are used to update weights of all layers at the same time, assuming that output of one layer don't impact other layers. However, this is not a completely valid assumption. For a n-layer network, doing this properly would need nth order gradients which is intractable. Instead, batch-norm is used that works on a mini batch at a time and constrains of the updates to reduce this unwanted shift in distribution of weights by normalizing the outputs before they are fed into the next layer.
+
+Basic algorithm of batch-norm involves taking the outputs or activations from a layer, calculating their mean an standard deviation and rescaling by these. Recall data normalization and scaling as described in Chapter 1. The main differences are:
+
+- It is being done between layers. In chapter 1, it was done once for the input data only 
+- It is done at a mini-batch level as opposed to the entire data set at a time
+
+Finally, there are two learnable parameter $\gamma$ and $\beta$ that are multiplied with the normalized data before sending to the next layer. 
+
 talk about that this is technically not a regularization method, but is often considered so. the intuition behind it, normalizing the weights in a time and space efficient manner. speeds up training and gets to better minima. Add to code and see difference. Talk about Deployment considerations.
 
 ## Data augmentation
