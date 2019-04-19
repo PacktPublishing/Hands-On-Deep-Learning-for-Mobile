@@ -428,6 +428,44 @@ Fig 5-18 above shows some examples of dropout. (A) shows a two-layer network. Gr
 
 Typically, a dropout layer is added after the convolutional and max pooling layer of a convolutional section of the network. Dropout is added between each dense layer. In Tensorflow, `keras.layers.Dropout` can be added to the network definition. Let's define a network assuming a drop out percentage of 20%, without any L2 regularization.
 
+```
+# (1) First the input layer
+inputs = keras.Input(shape=(28,28,), name='emnist_inp')
+x = layers.Reshape((28, 28, 1))(inputs)  # since images are gray scale, they have only one channel
+
+# (2.1) Learn 64 different filters, each 3x3 in size, with valid pooling, and (1,1) stride size
+x = layers.Conv2D(128, (5, 5), activation='relu', padding="same")(x)
+x = layers.Conv2D(128, (5, 5), activation='relu', padding="same")(x)  # 2 convolutional layers
+# (3.1) Pooling layer
+x = layers.MaxPooling2D(pool_size=(2, 2))(x)
+# (4.1) Dropout Layer, dropping 20% of the connection
+x = layers.Dropout(0.2)(x)
+
+# (2.2) Learn 64 different filters, each 3x3 in size, with valid pooling, and (1,1) stride size
+x = layers.Conv2D(64, (3, 3), activation='relu')(x)
+x = layers.Conv2D(64, (3, 3), activation='relu')(x)  # 2 convolutional layers
+# (3.2) Pooling layer
+x = layers.MaxPooling2D(pool_size=(2, 2))(x)
+# (4.2) Dropout Layer, dropping 20% of the connection
+x = layers.Dropout(0.2)(x)
+
+# (4) Dimensions after pooling are 5x5x64\. The 28x28 image is now 5x5 with 64 filters
+x = layers.Flatten()(x)
+
+# (5) Traditional dense/FC layers to use these inputs for classification
+# This part is similar to previous model
+x = layers.Dense(256, activation='relu', name='dense_1')(x)
+# (4.3) Dropout Layer, dropping 20% of the connection
+x = layers.Dropout(0.2)(x)
+
+x = layers.Dense(128, activation='relu', name='dense_2')(x)
+# (4.4) Dropout Layer, dropping 20% of the connection
+x = layers.Dropout(0.2)(x)
+outputs = layers.Dense(47, activation='softmax', name='predictions')(x)
+```
+
+All the places dropout has been added are marked with a _4.x_ number. First, drop out is added after the two convolutional blocks (4.1 and 4.2). Then, two dropouts are added after each of the dense layers (4.3 and 4.4).
+
 Add to the code and see the difference. Explain how to build code so that drop out is used only in training and not in inference.
 
 ### Batch Normalization
