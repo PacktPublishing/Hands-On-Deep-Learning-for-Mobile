@@ -179,7 +179,7 @@ A pooling kernel size of (2, 2) will halve the size of the input. Different kern
 
 Now that we know the basics building blocks of CNNs, let's build an CNN to recognize EMNIST.
 
-### EMNIST with CNNs
+## EMNIST with CNNs
 
 Code for this example can be found in `<TODO:git path>/Chapter5/mobile_cnn_model.ipynb`. A set of utilities to simplify loading and visualizing EMNIST data are available in `<TODO:git path>/utils/emnist_utils.py` file.
 
@@ -211,7 +211,13 @@ cnn = keras.Model(inputs=inputs, outputs=outputs, name='cnn_model_1')
 cnn.summary()
 ```
 
-This will produce an output describing the model like so:
+Given the amount of complex theory that goes into CNNs, Keras and TensorFlow do a wonderful job of hiding this complexity and allowing ML engineers to focus on building the network. Lets analyze the code above. (1) sets up the input layer and shows that each image is 28x28\. Then, it is reshaped to 28x28x1 tensor. This is because it is a gray scale image. the added dimension just denotes the 'gray' channel. If this was a color image like RGB, then this could be reformatted into 28x28x3 to denote the three channels. Note that the number of channels is last in this data format. this is called `channels_last` or NHWC. Here, 'N' refers to number of data samples, 'H' refers to height of each image, 'W' is width of the image and 'C' refers to the channels. It is also possible to have data in NCHW format. `layers.reshape` method can be used to convert between these formats.
+
+> Infobox: It is common mistake to not be careful with the data format sizes and get errors. Another tip: NCHW format is more efficient on NVIDIA GPUs while NHWC is more efficient for CPUs. More tips on performance can be found on <https://www.tensorflow.org/guide/performance/overview>
+
+In (2) and (3), a convolutional layer is added with 64 filters followed by a max pooling layer are added. The kernel is of size 3x3\. By default, _valid_ padding is used if a padding is not supplied. Since _stride size_ is also not provided, it is assumed as (1,1), which means 1 pixel in the right and down directions. `tf.keras.layers.Conv2D` takes many other options and you are encouraged to look into the API and play with some of these.
+
+T0 prepare these for input into the dense classification layers, (4) flattens this _volume_ of 13x13x64 into a single layer of 10,816 units. These dimensions can be verified by the summary shown below. (5) shows the two dense layers followed by an output layer. Note that this is identical to the fully connected network designed in Chapter 1\. One key point of difference is that that network took 28x28 or 784 values as inputs. Through stages of CNN, these have become over ten thousand inputs.
 
 ```
 Model: "cnn_model_1"
@@ -240,58 +246,218 @@ Non-trainable params: 0
 _________________________________________________________________
 ```
 
-There are quite a few changes here.
+Note that the summary above has a lot more parameters than the previous model. This is around 2.8 million trainable parameters compared to approximately 240 thousand parameters in the previous model.
 
-- code up a simple extension to EMNIST code, introduce the utilities lib
+> Tip: Training the model on the CPU is certainly possible, but slower than training on a GPU. This example was trained on a GPU. Your running times will be different based on CPU or GPU used for training. Also note that the accuracy of the model may be slightly different as well between GPU and CPU. This is due to differences in how rounding is handled for double and float data types. So don't be concerned if your accuracies do not exactly match with the examples.
 
-- show how trainable parameters have increased.
+Lets train the model as shown below.
 
-- Ensure two convolutional layers atleast.
+```
+# Lets compile the model and TRAIN it
+cnn.compile(optimizer=tf.keras.optimizers.Adam(0.001),
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+history = cnn.fit(norm_train_features, one_hot_train_labels, epochs=10, batch_size=128)
 
-- Plot confusion matrix and highlight any differences from chapt 1
+Epoch 1/10
+697932/697932 [==============================] - 33s 48us/sample - loss: 0.4692 - accuracy: 0.8421
+Epoch 2/10
+697932/697932 [==============================] - 30s 43us/sample - loss: 0.3198 - accuracy: 0.8846
+....
+Epoc 10/10
+697932/697932 [==============================] - 30s 43us/sample - loss: 0.2048 - accuracy: 0.9177
 
-  ### Visualizing Convolutions
+# Evaluate the model on the TEST set
+cnn.evaluate(norm_test_features, one_hot_test_labels, 47)
 
-- Using TensorBoard
+116323/116323 [==============================] - 5s 47us/sample - loss: 0.3395 - accuracy: 0.8888
+```
 
-- Migrating training real time plots to TensorBoard
+Note that the difference in accuracy between training and testing has increased compared to the example in Chapter 1\. Here training accuracy is 91,77% while accuracy on the test set is 88.88%. In the fully connect network example, training accuracy was 85.14% and test set accuracy was 84.15%. Recall from Chapter 1 that this ability of a model to perform on an unseen data set, in this case the test set, is a measure of it's generalizability. When a model is deployed into production, distribution of data it will receive compared to the dsitribution of data it was trained on is not always the same. Hence, a model that generalizes better will perform better in production even though it may have lower training accuracy. There are a set of techniques, also known as _regularization_, that are covered in a later section in this chapter. For now, it is important to get a visual sense of hoe signal is being transmitted through various parts of the network.
 
-- visualizing output of each convolutional layer
+To understand and monitor our network as it trains, TensorFlow comes with a tool called _TensorBoard_. This is a really useful tool to understand and debug deep learning networks. This is the focus of the next section prior to discussing regularization.
 
-- show how weights are shifting in dense layers maybe?
+### Visualizing Training with _TensorBoard_
 
-- Show case training and test errors
+Deep learning applications are very hard to debug during training. In large data sets, training could be running for days potentially. To debug and understand how a network is being train, TensorBoard is shipped with TensorFlow. It is a web based debug tool that can visualize how training is going in near real time. Once it is configured properly, it can generate graphs like Fig 5-13 and number of other diagnostic information.
 
-Activation atlas: <https://distill.pub/2019/activation-atlas/>
+![Figure 5-13: TensorBoard Network Graph](./images/chap5-Tensorboard-graph-viz.png)
+
+Figure 5-13: CNN Graph Structure generated by TensorBoard
+
+Getting TensorBoard to work is relatively straightforward. Specific commands need to be added to the training loop that log information of interest during training. These pieces of information are stored to a directory location that TensorBoard can access. TensorBoard reads data from this location and keep refreshing the visualizations. Lets configure this for our example. In `mobile_cnn_model.ipynb` file, skip to the heading _New Deeper Network_ to see the full code. For this example, we are going to use a more complex CNN model with:
+
+- 2 convolutional layers with same padding followed by a max pooling layers
+- 2 more convolutional layers with valid padding followed by a max pooling layer
+- 2 dense layers
+- Softmax output layer
+
+> Infobox: Note that the total number of trainable parameters for this deeper network are 560,039\. This is roughly 20% of the number of trainable parameters in the first CNN built above. However, this network takes longer to train and is more accurate. Recall that CNNs are building feature hierarchies. Having deeper networks build higher level structures which are easier to classify. Secondly, use of convolution and pooling keeps a check on the number of trainable parameters. However, it takes longer to train as gradient propagation increases with addition of layers adding to training time.
+
+Configuring TensorBoard is easy. First step is to create a log directory folder. This folder will have subfolders that have statistics from various training runs. Add these lines after the network is setup. Note that these can be added anywhere in your Python code.
+
+```
+import os, datetime
+
+# sets the log directory as a subdirectory of the folder this python notebook is store in
+
+logs_base_dir = "./logs"
+
+# If the directory does not exist, create it
+
+os.makedirs(logs_base_dir, exist_ok=True)
+
+# (1) Make a subdirectory with date and time formatted string to keep track of runs
+
+logdir = os.path.join(logs_base_dir, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+
+# (2) Register a callback with Keras to call after every epoch is completed
+
+tensorboard_callback = keras.callbacks.TensorBoard(logdir, histogram_freq=1, write_images=True)
+```
+
+(1) setups a subdirectory under the log directory to store outputs from a training run. Note that the name of this subdirectory is dynamically generated based on the date and time.
+
+> TIP: It is important to use unique names for training runs, otherwise data can be overwritten and inconsistent results will be seen in TensorBoard.
+
+Any scheme for generating this name can be used. (2) configures the setup of the TensorBoard logging as a callback from Keras. This method takes a number of arguments such as:
+
+- `log_dir`: the path of the directory where to save the log files to be parsed by TensorBoard.
+- `histogram_freq`: frequency (in epochs) at which to compute activation and weight histograms for the layers of the model. If set to 0, histograms won't be computed. Validation data (or split) must be specified for histogram visualizations.
+- `write_graph`: whether to visualize the graph in TensorBoard. The log file can become quite large when write_graph is set to True.
+- `write_images`: whether to write model weights to visualize as image in TensorBoard.
+- `update_freq`: 'batch' or 'epoch' or integer. When using 'batch', writes the losses and metrics to TensorBoard after each batch. The same applies for 'epoch'. If using an integer, let's say 1000, the callback will write the metrics and losses to TensorBoard every 1000 samples. Note that writing too frequently to TensorBoard can slow down your training.
+- `profile_batch`: Profile the batch to sample compute characteristics. By default, it will profile the second batch. Set profile_batch=0 to disable profiling. Must run in TensorFlow eager mode.
+
+To start training and logging data, a small modification is needed in the `fit` method shown below. Now, start training.
+
+```
+
+# Lets compile the model and train it
+
+cnn2.compile(optimizer=tf.keras.optimizers.Adam(0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Note the addition of the validation data and callback in the training loop
+history = cnn2.fit(norm_train_features, one_hot_train_labels,
+                   epochs=10, batch_size=128,
+                   validation_data=(norm_test_features, one_hot_test_labels),
+                   callbacks=[tensorboard_callback])
+```
+
+To see the visualizations, following command can be used from the command line:
+
+```
+$ tensorboard --logdir <path_to_log_dir>
+```
+
+This will be default start the TensorBoard web application on port 6006\. Replace the path to the log directory based on what was configured in the code above. Open a web browser and navigate to `localhost:6006` of the appropriate server name and port TensorBoard was started on to visualize the output. this will bring up the default web page as shoown in Fig 5-14.
+
+![Figure 5-14: TensorBoard](./images/chap5-tensorboard.png)
+
+Figure 5-14: TensorBoard
+
+There are three main part of this interface. Looking at the labels in Fig 5-14:
+
+1. Training runs: this section shows the training runs. Recall that in the code above, we chose the directory names based on date and time. These show up here as training runs. there are pairs because we passed in training and testing set of data to validate training against.
+2. Top navigation shows the features of TensorBoard that have data or are activated. In this case, you should see Scalars, Images, Graphs, Distributions, and Histograms. Default tab should be Scalars.
+
+  - Scalars: It will show how accuracy and loss has varied over epochs for training and test sets. As training is running, these will be dynamically updated. Fig 5-15 shows the output from a training run after 3 epochs. ![Figure 5-15: Realtime visualization of accuracy and loss](images/chap5-tensorboard-accuracy-realtime.png)
+  - Images: This section allows images to be logged from the network.
+  - Graphs: This visualizes the graph of the network that has been created. This was used to generate Fig 5-14.
+  - Distributions and Histograms show how the weights and biases are changing over the course of training. It is useful in debugging if the network is learning as per expectations. An example is show in Fig 5-16\. ![Figure 5-16: Tensorboard Histograms showing weight variations](images/chap5-tensorboard-weight-distributions-change.png)
+
+3. _Inactive_ shows the other visualizations that can be generated by TensorBoard but that aren't currently active. There is a refresh button next to it to update the visualizations. By default, TensorBoard updates every thirty seconds. This behavior can be changed by clicking the gear icon.
+
+To see how TensorBoard can be useful in debugging outputs, consider the plot in Figure 5-17.
+
+![Figure 5-17: Accuracy and Loss over epochs](images/chap5-tensorboard-loss-debugging.png)
+
+Figure 5-17: Debugging accuracy and loss using TensorBoard scalars plots
+
+In this plot, the green line represents the training set and the grey line represents the test set. Focussing on the loss plot on the left, it seems that while training error is reducing, test error is increasing! This is generally a sign of the network overfitting or memorizing the data set. The next section talks about how to generalize better so that this gap between the training and test sets can be minimized.
+
+> InfoBox: Activation atlas is a unique way of visualizing CNNs. It maps activations at each pixel to images that were used to train the network providing a in-depth explainable analysis of how the network is working. while description of this paper is beyond the scope of this book, you are encourage to take a look at <https://distill.pub/2019/activation-atlas/>. It is written in a very accessible and approachable way.
 
 ## Generalization through Regularization
 
-The art of minimizing the difference between training and test error. what is the difference between optimization and machine learning? Explain the purpose of regularization. Talk about constraining weights through L2 norms for dense networks. But say focus is on two specific methods used in CNN - Drop Out and BatchNorm.
+When the network has high capacity, it can start to memorize the training data. This makes it less effective at classifying unseen data. This is possibly the reason for the differences shown in the previous section. _Generalization_ is the ability of the network to accurately classify unseen data. This ability to generalize is what makes machine and deep learning different from optimization. Optimization is closed form and operates on a known data set. It optimizes or maximizes a desired outcome given a data set. It makes no guarantees on performance of the solution on unseen data sets. However, it is key that deep learning solution generalize, otherwise it would be of severely limited applicability. _Regularization_ is the process by which the solution obtained through optimization can be generalized.
+
+Process of optimization, through gradient descent and weight update, is learning the weights and biases for different units of the network. These weights are multiplied by the inputs to calculate activations. It is possible that some of the features or inputs in the training set are highly predictive. Consequently, the model will learn larger weights for them. The network will spend effort extracting signal from other weights as it would have found a solution. However, these features may be not be as predictive in the test set. The test set should ideally be drawn from the same distribution as the training set, however this assumption is not strictly true in production use cases. Now, the trained model tries to classify the test set and will not have much success as it would put too much emphasis on some features through larger weights and consequently larger activations values. Regularization in its simplest form, is a way to constrain the weights so that they cant become too large for any input. This will force the network to discover and learn from other inputs. Typically, applying regularization reduces training accuracy, but increases test accuracy. A common technique is _L2 Regularization_, which can be applied to any network, including dense networks.
+
+Process of optimization, through gradient descent and weight update, is learning the weights and biases for different units of the network. These weights are multiplied by the inputs to calculate activations. It is possible that some of the features or inputs in the training set are highly predictive. Consequently, the model will learn larger weights for them. The network will spend effort extracting signal from other weights as it would have found a solution. However, these features may be not be as predictive in the test set. The test set should ideally be drawn from the same distribution as the training set, however this assumption is not strictly true in production use cases. Now, the trained model tries to classsify the test set and will not have much success as it would put too much emphasis on some features through larger weights and consequently larger activations values. Regularization in its simplest form, is a way to constrain the weights so that they cant become too large for any input. This will force the network to discover and learn from other inputs. Typically, applying regularization reduces training accuracy, but increases test accuracy. Common techniques used are _L2 Regularization_, _L1 Regularization_, and _Dropout_. _Batch Normalization_, technically being a optimization technique, is sometimes regarded as a regularization technique. These four techniques are covered in subsequent sections.
+
+### L2 and L1 Regularization
+
+This technique is very general, and is applicable in logistic regression, linear regression as well as deep learning networks. It is known by many names like _ridge regression_, and _Tikhonov regularization_. Objective of L1 and L2 regularizations is to constrain the weights in the model by adding a penalty in the loss function that depends on the square of the magnitude of the weights. Recall definition of loss functions from Chapter 1\. The sum of the squares of all the weights, that the inputs are multiplied with, is multiplied by a regularization constant and added to the loss as the regularization penalty. This regularization constant or parameter is often denoted by $\lambda$. Consequently the loss formula becomes:
+
+$$ loss_{regularized} = loss + \lambda * \sum_i w_i^2 $$
+
+The net effect of adding this term is that the optimizer is now trying to actively reduce the overall loss. If a specific solution is chosen by the optimizer that causes weights to increase or decrease to large values, the advantage of reduction in the loss term will be offset by the increase of this regularization term. In other words, the model is constrained to not rely one a few inputs too much. This leads to better generalization on unseen test data.
+
+L1 regularization, also sometimes referred to as _lasso regression_, adds the sum of the absolute values of the weights instead of the square. Loss equation looks like so:
+
+$$ loss_{regularized} = loss + \lambda * \sum_i \vert w_i \vert $$
+
+> Info box: Lasso stands for Least Absolute Shrinkage and Selection Operator
+
+L1 regularization works differently than L2 regularization. It can have the effect of reducing some of the weights to zero. This will result in those input or features to be ignored in the model. This, it can act as a feature selection tool.
+
+$\lambda$, or the regularization parameter, is another hyper parameter that now needs to be selected and tuned. It's value can vary quite a bit. If a large value is chosen, it will reduce the model's capacity and may lead to underfitting. If a very small value is chosen, it may not have adequate impact on the weights being learned and may not address generalization.
+
+`tf.keras.regularizers` package provides implementations of these two in TensorFlow. They can be added to a dense or convolutional layer through the use of optional `kernel_regularizer` parameter. Here is an example of applying L2 regularization with $ \lambda $ of 0.001, to the first dense layer. Selection of this hyper parameter can be difficult task. Using the data from TensorBoard about histograms of the weights and the losses, a reasonable starting estimate can be made about this parameter and tuned from there.
+
+```
+x = layers.Dense(256, activation='relu',
+                 kernel_regularizer=keras.regularizers.l2(l=0.001),
+                 name='dense_1')(x)
+```
+
+The effect of this can be seem after running the training and testing on the first simple convolutional model. Training accuracy reduced from 91.77% to 87.39% while test error reduced from 88.88% to 87.03%. It is clear that now, the test and training are working more in sync with each other. A bigger network a $ \lambda $ of 0.0003 can be found in the Regularization section of the `mobile_cnn_model.ipynb` notebook.
+
+Typically, L1 and L2 regularizers are applied to dense layers. Next section discusses a key advancement in CNNs, called dropout.
 
 ### Drop Out
 
-Intuition behind drop out, forcing units to do more work on learning relationships, not depending on everything being present. Add to the code and see the difference. Explain how to build code so that drop out is used only in training and not in inference.
+Dropout is a technique where a given percentage of connections between layers are randomly dropped between each mini-batch run. This is applied to non-output layers. It can be applied on the input layer, though this is more common in vision applications. Most importantly, this approach is only used during training. During inference, all the connections are restored.
+
+![Figure 5-18: Dropout Examples](images/chap5-dropout.png)
+
+Figure 5-18: Dropout Examples
+
+Fig 5-18 above shows some examples of dropout. (A) shows a two-layer network. Grey lines denote input or output units. connections are color coded showing connections from each unit to the next layer. Assuming a dropout ratio of 50%, which means that half of the connections from a preceding layer are randomly dropped, (B) demonstrates one such configuration of the network while training. For some other mini-batch, the network may look like (C). In a way, this is similar to _ensemble_ methods, where output of multiple networks is averaged to produce the output. Intuition behind drop out is that dropping connections forces units to do more work on learning relationships, and not depend on all inputs to it being present. note that this would reduce the activation that the next layer receives by the amount of drop out. It is common to boost the output by the dropout percentage to compensate for this loss. Thankfully, TensorFlow takes care of these complexities.
+
+Typically, a dropout layer is added after the convolutional and max pooling layer of a convolutional section of the network. Dropout is added between each dense layer. In Tensorflow, `keras.layers.Dropout` can be added to the network definition. Let's define a network assuming a drop out percentage of 20%, without any L2 regularization.
+
+Add to the code and see the difference. Explain how to build code so that drop out is used only in training and not in inference.
 
 ### Batch Normalization
 
-talk about that this is technically not a regularization method,but is often considered so. the intuition behind it, normalizing the weights in a time and space efficient manner. speeds up training and gets to better minima. Add to code and see difference. Talk about Deployment considerations.
+talk about that this is technically not a regularization method, but is often considered so. the intuition behind it, normalizing the weights in a time and space efficient manner. speeds up training and gets to better minima. Add to code and see difference. Talk about Deployment considerations.
 
 ## Mobile Optimization Part I
 
 Show how to save and convert to mobile format. talk about building object detection to read lines of text from camera.
 
-## Object Dection / Landmark using CNN? (check what yolo uses)
+## Object Detection / Landmark using CNN? (check what yolo uses)
 
 Check from this article: <https://blog.netcetera.com/face-recognition-using-one-shot-learning-a7cf2b91e96c> see if we can isolate characters from a line of text.
 
 ### Detecting characters from a line of text from mobile Camera
+
+# Optional Content (Time Permitting)
+
+## Visualizing Convolutions
+
+- visualizing output of each convolutional layer
 
 ### Smile Detection Selfie Taking App
 
 ## Questions
 
 1. What are the two key properties of a CNN that make them so effective at computer vision tasks?
-2. You may have noticed that the number of trainable parameters have increased significantly when using a CNN. You may wonder if adding more dense layers which lead to same number of trainable parameters would lead to similar accuracy. This is a good exercise to try. Try two architectures:
+2. You may have noticed that the number of trainable parameters have changed significantly when using a CNN. You may wonder if adding more dense layers which lead to same number of trainable parameters would lead to similar accuracy. This is a good exercise to try. Try two architectures:
 
   - Deeper: Add more layers rather than units in the layers
-  - Wider: Add more units in the layers than adding more layers and see what you learn about how these networks perform.
+  - Wider: Add more units in the layers than adding more layers and see what you learn about how these networks perform. How do these perform on accuracy and training time?
+
+3. Compare the confusion matrix from the iPython notebook for the first CNN model with Fig 15 from Chapter 1\. Do you see any differences? Checkout the confusion between B-8 and O-0\. Would you expect these two to behave differently? Why or why not?
