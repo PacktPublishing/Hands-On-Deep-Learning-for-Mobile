@@ -384,11 +384,51 @@ When the network has high capacity, it can start to memorize the training data. 
 
 Process of optimization, through gradient descent and weight update, is learning the weights and biases for different units of the network. These weights are multiplied by the inputs to calculate activations. It is possible that some of the features or inputs in the training set are highly predictive. Consequently, the model will learn larger weights for them. The network will spend effort extracting signal from other weights as it would have found a solution. However, these features may be not be as predictive in the test set. The test set should ideally be drawn from the same distribution as the training set, however this assumption is not strictly true in production use cases. Now, the trained model tries to classify the test set and will not have much success as it would put too much emphasis on some features through larger weights and consequently larger activations values. Regularization in its simplest form, is a way to constrain the weights so that they cant become too large for any input. This will force the network to discover and learn from other inputs. Typically, applying regularization reduces training accuracy, but increases test accuracy. A common technique is _L2 Regularization_, which can be applied to any network, including dense networks.
 
-The art of minimizing the difference between training and test error. what is the difference between optimization and machine learning? Explain the purpose of regularization. Talk about constraining weights through L2 norms for dense networks. But say focus is on two specific methods used in CNN - Drop Out and BatchNorm.
+Process of optimization, through gradient descent and weight update, is learning the weights and biases for different units of the network. These weights are multiplied by the inputs to calculate activations. It is possible that some of the features or inputs in the training set are highly predictive. Consequently, the model will learn larger weights for them. The network will spend effort extracting signal from other weights as it would have found a solution. However, these features may be not be as predictive in the test set. The test set should ideally be drawn from the same distribution as the training set, however this assumption is not strictly true in production use cases. Now, the trained model tries to classsify the test set and will not have much success as it would put too much emphasis on some features through larger weights and consequently larger activations values. Regularization in its simplest form, is a way to constrain the weights so that they cant become too large for any input. This will force the network to discover and learn from other inputs. Typically, applying regularization reduces training accuracy, but increases test accuracy. Common techniques used are _L2 Regularization_, _L1 Regularization_, and _Dropout_. _Batch Normalization_, technically being a optimization technique, is sometimes regarded as a regularization technique. These four techniques are covered in subsequent sections.
+
+### L2 and L1 Regularization
+
+This technique is very general, and is applicable in logistic regression, linear regression as well as deep learning networks. It is known by many names like _ridge regression_, and _Tikhonov regularization_. Objective of L1 and L2 regularizations is to constrain the weights in the model by adding a penalty in the loss function that depends on the square of the magnitude of the weights. Recall definition of loss functions from Chapter 1\. The sum of the squares of all the weights, that the inputs are multiplied with, is multiplied by a regularization constant and added to the loss as the regularization penalty. This regularization constant or parameter is often denoted by $\lambda$. Consequently the loss formula becomes:
+
+$$ loss_{regularized} = loss + \lambda * \sum_i w_i^2 $$
+
+The net effect of adding this term is that the optimizer is now trying to actively reduce the overall loss. If a specific solution is chosen by the optimizer that causes weights to increase or decrease to large values, the advantage of reduction in the loss term will be offset by the increase of this regularization term. In other words, the model is constrained to not rely one a few inputs too much. This leads to better generalization on unseen test data.
+
+L1 regularization, also sometimes referred to as _lasso regression_, adds the sum of the absolute values of the weights instead of the square. Loss equation looks like so:
+
+$$ loss_{regularized} = loss + \lambda * \sum_i \vert w_i \vert $$
+
+> Info box: Lasso stands for Least Absolute Shrinkage and Selection Operator
+
+L1 regularization works differently than L2 regularization. It can have the effect of reducing some of the weights to zero. This will result in those input or features to be ignored in the model. This, it can act as a feature selection tool.
+
+$\lambda$, or the regularization parameter, is another hyper parameter that now needs to be selected and tuned. It's value can vary quite a bit. If a large value is chosen, it will reduce the model's capacity and may lead to underfitting. If a very small value is chosen, it may not have adequate impact on the weights being learned and may not address generalization.
+
+`tf.keras.regularizers` package provides implementations of these two in TensorFlow. They can be added to a dense or convolutional layer through the use of optional `kernel_regularizer` parameter. Here is an example of applying L2 regularization with $ \lambda $ of 0.001, to the first dense layer. Selection of this hyper parameter can be difficult task. Using the data from TensorBoard about histograms of the weights and the losses, a reasonable starting estimate can be made about this parameter and tuned from there.
+
+```
+x = layers.Dense(256, activation='relu',
+                 kernel_regularizer=keras.regularizers.l2(l=0.001),
+                 name='dense_1')(x)
+```
+
+The effect of this can be seem after running the training and testing on the first simple convolutional model. Training accuracy reduced from 91.77% to 87.39% while test error reduced from 88.88% to 87.03%. It is clear that now, the test and training are working more in sync with each other. A bigger network a $ \lambda $ of 0.0003 can be found in the Regularization section of the `mobile_cnn_model.ipynb` notebook.
+
+Typically, L1 and L2 regularizers are applied to dense layers. Next section discusses a key advancement in CNNs, called dropout.
 
 ### Drop Out
 
-Intuition behind drop out, forcing units to do more work on learning relationships, not depending on everything being present. Add to the code and see the difference. Explain how to build code so that drop out is used only in training and not in inference.
+Dropout is a technique where a given percentage of connections between layers are randomly dropped between each mini-batch run. This is applied to non-output layers. It can be applied on the input layer, though this is more common in vision applications. Most importantly, this approach is only used during training. During inference, all the connections are restored.
+
+![Figure 5-18: Dropout Examples](images/chap5-dropout.png)
+
+Figure 5-18: Dropout Examples
+
+Fig 5-18 above shows some examples of dropout. (A) shows a two-layer network. Grey lines denote input or output units. connections are color coded showing connections from each unit to the next layer. Assuming a dropout ratio of 50%, which means that half of the connections from a preceding layer are randomly dropped, (B) demonstrates one such configuration of the network while training. For some other mini-batch, the network may look like (C). In a way, this is similar to _ensemble_ methods, where output of multiple networks is averaged to produce the output. Intuition behind drop out is that dropping connections forces units to do more work on learning relationships, and not depend on all inputs to it being present. note that this would reduce the activation that the next layer receives by the amount of drop out. It is common to boost the output by the dropout percentage to compensate for this loss. Thankfully, TensorFlow takes care of these complexities.
+
+Typically, a dropout layer is added after the convolutional and max pooling layer of a convolutional section of the network. Dropout is added between each dense layer. In Tensorflow, `keras.layers.Dropout` can be added to the network definition. Let's define a network assuming a drop out percentage of 20%, without any L2 regularization.
+
+Add to the code and see the difference. Explain how to build code so that drop out is used only in training and not in inference.
 
 ### Batch Normalization
 
