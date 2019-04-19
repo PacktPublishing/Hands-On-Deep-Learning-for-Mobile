@@ -539,6 +539,10 @@ Dropout has the amazing affect of increasing overall accuracy! Testing accuracy 
 
 talk about that this is technically not a regularization method, but is often considered so. the intuition behind it, normalizing the weights in a time and space efficient manner. speeds up training and gets to better minima. Add to code and see difference. Talk about Deployment considerations.
 
+## Data augmentation
+
+Refer to imbalance in images. See if we can create more samples by changing contrast for the few characters that are low on samples. use <https://www.tensorflow.org/versions/r2.0/api_docs/python/tf/keras/preprocessing/image/ImageDataGenerator>
+
 ## Mobile Optimization Part I
 
 Show how to save and convert to mobile format. talk about building object detection to read lines of text from camera.
