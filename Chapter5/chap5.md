@@ -535,9 +535,85 @@ cnn2_dropout.evaluate(norm_test_features, one_hot_test_labels, 47)
 
 Dropout has the amazing affect of increasing overall accuracy! Testing accuracy was 90.22% without regularization. With dropout, this has moved to 90.69%!
 
+> TIP: Plan to train your network for more epochs when using dropout. It helps the network learn the right relationships even as dropout reduces signal going from one layer to the other.
+
 ## Batch Normalization
 
-talk about that this is technically not a regularization method, but is often considered so. the intuition behind it, normalizing the weights in a time and space efficient manner. speeds up training and gets to better minima. Add to code and see difference. Talk about Deployment considerations.
+Batch normalization aims to reduce variance of the outputs coming from one layer being fed into the next layer. By reducing this variance, it acts like L2 regularization which attempts the same thing by adding penalties on the weights to the cost or loss. Main motivation is to efficiently back-propagate gradient updates through as large number of layers while minimizing the risk that this update could result in divergence. In stochastic gradient descent, gradients calculated are used to update weights of all layers at the same time, assuming that output of one layer doesn't impact other layers. However, this is not a completely valid assumption. For a n-layer network, doing this properly would need nth order gradients which is intractable. Instead, batch-norm is used that works on a mini batch at a time and constrains of the updates to reduce this unwanted shift in distribution of weights by normalizing the outputs before they are fed into the next layer.
+
+Basic algorithm of batch-norm involves taking the outputs or activations from a layer, calculating their mean an standard deviation and rescaling by these. Recall data normalization and scaling as described in Chapter 1\. The main differences are:
+
+- It is being done between layers. In chapter 1, it was done once for the input data only
+- It is done at a mini-batch level as opposed to the entire data set at a time
+
+There are two learnable parameter $\gamma$ and $\beta$ that are multiplied with the normalized data before sending to the next layer. Let's demystify how this layer works. This math is shown in the equations below. Assume that $x$ represents the set of values over a mini-batch that are input to batchnorm.
+
+$\mu_B = {1\over m }\sum_i x_i$ where there are m samples in the minibatch.
+
+$\sigma^2_B = {1\over m}\sum_i(x_i - \mu_B)^2$ calculates the standard deviation of the minibatch
+
+$\hat x_i = {{x_i - \mu_B} \over {\sqrt{\sigma_B^2 + \epsilon}} }$ scales the individual values. Note use of a very small value $\epsilon$ to prevent divide by zero errors. Finally,
+
+$output_i = \gamma\hat x_i + \beta$ provides the output of the batchnorm layer. Note that if $\gamma$ is set to the standard deviation and $\beta$ is set to the mean, then the original input will be recreated. This is the main benefit of these learning parameters. They allow the network to decide how much scaling is effective.
+
+Implementing this is quite easy in Tensorflow as batchnorm is available as a layer, very similar to dropout. To view the full code, scroll to the _Batch Normalization_ section of the notebook. Batchnorm along with dropout will be put between each convolution layer as shown in the code below. This pattern is repeated. Full code is not shown here for brevity.
+
+```
+# (1) First the input layer
+inputs = keras.Input(shape=(28,28,), name='emnist_inp')
+x = layers.Reshape((28, 28, 1))(inputs)  # since images are gray scale, they have only one channel
+
+# (2.1) Learn 128 different filters, each 3x3 in size, with valid pooling, and (1,1) stride size
+x = layers.Conv2D(128, (3, 3), activation='relu', padding="same")(x)
+# (5.1) BatchNormalization added between conv layer
+x = layers.BatchNormalization()(x)
+# (4.1) Dropout Layer, dropping 20% of the connection
+x = layers.Dropout(0.2)(x)
+```
+
+Quick summary of the network shows an increase in the trainable and non-trainable parameters of the network. Full summary will show how many parameters were added by batchnorm.
+
+```
+=================================================================
+Total params: 709,935
+Trainable params: 709,167
+Non-trainable params: 768
+```
+
+> INFO: Non-trainable parameters those that are selected by the developer and are not learned through training. An example of non-trainable parameter is dropout amount.
+
+As mentioned above, this network is trained for 15 epochs, which is more than the previous versions. Note that training on a CPU can take a long time, even hours potentially.
+
+> TIP: If you intend to work in Deep Learning, a good NVIDIA GPU may be a great investment. It will help speed up any rendering and animation work for your mobile apps, as well as significantly improve training times. As a bonus, all the games on your machine will work much better. A good GPU would cost between US$400-600\. Comparatively, this is roughly the amount that was estimated the author would spend on Google Cloud. However, note that complex networks which need distributed GPUs would require use of a cloud provider.
+
+Lets compile the model and start training.
+
+```
+# Lets compile the model and train it
+cnn2_do_bn.compile(optimizer=tf.keras.optimizers.Adam(),
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# take a small part of the test set as a validation set
+val_test_features = norm_test_features[:5000]  # there are 116K test samples
+val_test_labels = one_hot_test_labels[:5000]
+
+# Note the addition of the validation data and callback in the training loop
+history = cnn2_do_bn.fit(norm_train_features, one_hot_train_labels,
+                   epochs=15, batch_size=128,
+                   validation_data=(val_test_features, val_test_labels)
+                          )
+
+Train on 697932 samples, validate on 5000 samples
+Epoch 1/15
+697932/697932 [==============================] - 194s 278us/sample - loss: 0.1959 - accuracy: 0.9210 - val_loss: 0.2584 - val_accuracy: 0.9072
+...
+697932/697932 [==============================] - 193s 277us/sample - loss: 0.1801 - accuracy: 0.9260 - val_loss: 0.2677 - val_accuracy: 0.9076
+```
+
+TensorBoard logging and callbacks have been removed for this particular example to speed up training. As a exercise, consider adding that code back-in to test your familiarity. Testing it against the test data set, it returns an accuracy of 90.74%. This is better than 90.69% after just adding dropout.
+
+> TIP: If you have been following along and running these training examples, it may seem that a lot of work is being done for a very small improvements or gains. This is the hard reality of working in Deep Learning. It becomes harder and harder to squeeze performance out of the networks.
 
 ## Data augmentation
 
