@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">ML Kit API</string>
+    <string name="previous_image">Previous Image</string>
+    <string name="detect_text">Run API</string>
+    <string name="desc">Image</string>
+    <string name="next_image">Next Image</string>
+    <string name="detected_text">API Result</string>
+
+    <string-array name="mlmodel">
+        <item>Text Recognition</item>
+        <item>Text Recognition (Cloud)</item>
+        <item>Barcode Detection</item>
+        <item>Landmark Detection (Cloud)</item>
+        <item>Document Detection(Cloud)</item>
+        <item>Face Detection</item>
+    </string-array>
+
+</resources>
