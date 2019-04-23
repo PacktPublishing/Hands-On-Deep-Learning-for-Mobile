@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "xxxxxxxxxxxx",
+    "firebase_url": "https://ml-kit-api-examples.firebaseio.com",
+    "project_id": "ml-kit-api-examples",
+    "storage_bucket": "ml-kit-api-examples.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:xxxxxxxxxxxx:android:yyyyyyyyyyyyyyyy",
+        "android_client_info": {
+          "package_name": "com.example.mlkitapi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "xxxxxxxxxxxx-????????????????????????????????.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "xxxxxxxxxxxx-????????????????????????????????.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
