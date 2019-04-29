@@ -617,6 +617,38 @@ TensorBoard logging and callbacks have been removed for this particular example 
 
 ## Data augmentation
 
+To improve the generalization ability of the model further, data augmentation can be used. Data augmentation involves synthetic creation of additional training data to further improve the accuracy of the models. These techniques are especially applicable in vision, speech or sound and video as it is relatively simple to create additional training samples. Consider an example of an app that recognizes objects in photos taken on that device. Common variations that may be observed can include different lighting conditions and contrasts, color tints, different crops and orientations amongst others. Table below shows a few illustrative examples of the types of transforms that can be done to generate or augment training data.
+
+|Images / Video   | Speech / Sound  |
+|:-:|:-:|
+|  Contrast/Brightness | Boost/attenuate volume/channel  |
+| Shear/Skew  |  Add background noise |
+| Rotate  | Change pitch/tone  |
+| Mirror/Flip   | Synthetic speech  |
+| Color/Grayscale   |  Mono/Stereo  |
+| Crop/rescale   | Combine/split  |
+
+The good news is that given an image, it is easy to simulate these conditions and generate more examples to help train. Tensorflow has packages that aid in doing this and these will be shown later in this section. Lets consider the confusion matrix output by the CNN model prior to adding any regularization. This is shown in the Figure 5-19 below.
+
+![Figure 5-19: Confusion Matrix with CNN model prior to regularization](images/chap5-confusion-matrix.png)
+Figure 5-18: Confusion Matrix of CNN model prior to regularization
+
+This matrix shows that the network is confused about the following pairs most often (in order of ranking):
+* 'L' and 1
+* 'I' and 1
+* 'q' and 9
+* 'g' and 9
+* 'O' and 0
+* 'f' and 'F'
+* 'Z' and 2
+
+Recall the distribution of training data from Fig 7 in Chapter 1. While the digits have a decent number of samples, training images are fewer for the letters in general. If additional training data can be generated for some of the letters, it would help in improving the accuracy.
+
+> TIP: Choosing what transforms to apply to images is key in data augmentation. For example, flipping an image along the vertical axis would help if the problem is for face or object detection. However, in detecting letters, this could change a 'b' to a 'd'. Similarly flipping on the horizontal axis may not make sense. It may result in upside-down cats! Always make sure that the transforms used work with the business problem.
+
+
+
+
 Refer to imbalance in images. See if we can create more samples by changing contrast for the few characters that are low on samples. use <https://www.tensorflow.org/versions/r2.0/api_docs/python/tf/keras/preprocessing/image/ImageDataGenerator>
 
 ## Mobile Optimization Part I
