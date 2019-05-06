@@ -619,43 +619,177 @@ TensorBoard logging and callbacks have been removed for this particular example 
 
 To improve the generalization ability of the model further, data augmentation can be used. Data augmentation involves synthetic creation of additional training data to further improve the accuracy of the models. These techniques are especially applicable in vision, speech or sound and video as it is relatively simple to create additional training samples. Consider an example of an app that recognizes objects in photos taken on that device. Common variations that may be observed can include different lighting conditions and contrasts, color tints, different crops and orientations amongst others. Table below shows a few illustrative examples of the types of transforms that can be done to generate or augment training data.
 
-|Images / Video   | Speech / Sound  |
-|:-:|:-:|
-|  Contrast/Brightness | Boost/attenuate volume/channel  |
-| Shear/Skew  |  Add background noise |
-| Rotate  | Change pitch/tone  |
-| Mirror/Flip   | Synthetic speech  |
-| Color/Grayscale   |  Mono/Stereo  |
-| Crop/rescale   | Combine/split  |
+  Images / Video    |         Speech / Sound
+:-----------------: | :----------------------------:
+Contrast/Brightness | Boost/attenuate volume/channel
+    Shear/Skew      |      Add background noise
+      Rotate        |       Change pitch/tone
+    Mirror/Flip     |        Synthetic speech
+  Color/Grayscale   |          Mono/Stereo
+   Crop/rescale     |         Combine/split
 
 The good news is that given an image, it is easy to simulate these conditions and generate more examples to help train. Tensorflow has packages that aid in doing this and these will be shown later in this section. Lets consider the confusion matrix output by the CNN model prior to adding any regularization. This is shown in the Figure 5-19 below.
 
-![Figure 5-19: Confusion Matrix with CNN model prior to regularization](images/chap5-confusion-matrix.png)
-Figure 5-18: Confusion Matrix of CNN model prior to regularization
+![Figure 5-19: Confusion Matrix with CNN model prior to regularization](images/chap5-confusion-matrix.png) Figure 5-18: Confusion Matrix of CNN model prior to regularization
 
 This matrix shows that the network is confused about the following pairs most often (in order of ranking):
-* 'L' and 1
-* 'I' and 1
-* 'q' and 9
-* 'g' and 9
-* 'O' and 0
-* 'f' and 'F'
-* 'Z' and 2
 
-Recall the distribution of training data from Fig 7 in Chapter 1. While the digits have a decent number of samples, training images are fewer for the letters in general. If additional training data can be generated for some of the letters, it would help in improving the accuracy.
+- 'L' and 1
+- 'I' and 1
+- 'q' and 9
+- 'g' and 9
+- 'O' and 0
+- 'f' and 'F'
+- 'Z' and 2
+
+Recall the distribution of training data from Fig 7 in Chapter 1\. While the digits have a decent number of samples, training images are fewer for the letters in general. If additional training data can be generated for some of the letters, it would help in improving the accuracy.
 
 > TIP: Choosing what transforms to apply to images is key in data augmentation. For example, flipping an image along the vertical axis would help if the problem is for face or object detection. However, in detecting letters, this could change a 'b' to a 'd'. Similarly flipping on the horizontal axis may not make sense. It may result in upside-down cars! Always make sure that the transforms used work with the business problem.
 
-There are two methods, one in Keras and one in TensorFlow, to perform data augmentation. Both allow this augmentation to be done on the fly as part of the training flow. It is also possible to write scripts that pre-process batches of images or other training data before the ML workflow starts. We will focus on the methods provided by TensorFlow here for this purpose.
+Keras and Tensorflow provide methods to perform data augmentation. `keras.preprocessing` and `tensorflow.data` packages provide a bunch of convenience functions. Both allow this augmentation to be done on the fly as part of the training flow. It is also possible to write scripts that pre-process batches of images or other training data before the ML workflow starts. Additionally, `tensorflow.image` and `tensorflow.audio` packages provide methods to help with data augmentation and manipulation of images.
+
+For purposes of this section, we will write the data augmentation task by hand. Primary reason for this that as of the writing, performance was a concern with the Keras preprocessing methods and TensorFlow methods needed a very large amount of code without any increase in performance. You can follow along Data Augmentation section in the iPython notebook. There is a section for showing how Keras can be used for data augmentation for reference. However, the focus will be on augmenting data by hand. For this exercise, new variants of the letter 'q' will be created to further improve accuracy. Following piece of code will help in understanding distribution samples for some of the letters mentioned above.
+
+```
+# Lets get number of samples for 'F', L', 'I', 'q', 'g', and 'f'
+from collections import Counter
+
+training_dist = Counter(train['labels'])  # count all the occurences
+for x in mappings:
+    # look through to find the letters and print their count
+    if mappings[x] in ('F', 'L', 'I', 'q', 'g', 'f'):
+        print(mappings[x], ' (', x,  "): ", training_dist[x])
+
+========== output ==========
+F  ( 15 ):  9098
+I  ( 18 ):  14733
+L  ( 21 ):  20381
+f  ( 40 ):  2535
+g  ( 41 ):  3693
+q  ( 44 ):  2966
+```
+
+'q' has the smallest number of samples, so let's try to add more samples. One of the techniques used is called _gamma correction_. This method is used to correct the luminosity of an image as it is displayed on a monitor. Each monitor has it's gamma profile based on it's manufacturing process and technology. This is made available to software as part of the driver so that software can adjust images accordingly and make them look similar across different monitors. However, this mechanism can also be artificially used to create new images with higher or lower brightness. An example is shown in the figure below.
+
+![Figure 5-18: Gamma adjusted image](./images/chap5-data-aug.png)
+
+Figure 5-18: Gamma adjusted image examples
+
+Figure on the left is the original image. The middle image is a dull version, and the one of the right is a brightened version. Formula for adjusting a grayscale image is to multiply each pixel with this formula:
+
+$$ gamma_adjusted = (\frac{pixel}{255} ) ^ {\frac{1}{gamma}} * 255 $$
+
+In code, this can be accomplished by:
+
+```
+def enhance_gamma(img, gamma):
+    return ((img / 255.) ** (1 / gamma)) * 255.
+```
+
+If gamma value used is less between 0 and 1, then it will produce a dull image. The middle images were produced by using a value of 1/3 or 0.33\. A value greater than 1 will result in brighter images. The brighter images were produced by using a gamma value of 2.
+
+All 'g' rows from training data can be extracted and added to training as show in the code below.
+
+```
+# Now lets do some transforms to 'q' and add it back to the training set
+
+q = [train['labels'] == 44]  # mask of all training images corresponding to 'q' as a list
+
+q_labels = np.compress(np.array(q).squeeze(), train['labels'], axis=0)
+# selecting all 'q' images out
+q_data = np.compress(np.array(q).squeeze(), train['features'], axis=0)
+
+# just checking for the right dimensions and numbers
+print(q_data.shape, q_labels.shape)  
+
+# Expected result is (3693 28, 28) (3693,)
+```
+
+We can also use similar logic to add training rows from other letters that are confusing.
+
+> TIP: Since all the data is loaded in memory, it will be useful to compute the overall size of the `numpy` input array. To calculate the size in bytes of an array, the following can be used: `q_data.size * q_data.itemsize / (1024*1024)`. It will provide the size in MB.
+
+Lets also add more samples for 'F' and 'f' in the same way to get some improvements in all three characters as show below.
+
+```
+# Extract 'F' and 'f' for augmentation as well
+small_f = [train['labels'] == 40]  # mask of all training images corresponding to 'f' as a list
+small_f_labels = np.compress(np.array(small_f).squeeze(), train['labels'], axis=0)
+# selecting all 'f' images out
+small_f_data = np.compress(np.array(small_f).squeeze(), train['features'], axis=0)
+
+big_f = [train['labels'] == 15]  # mask of all training images corresponding to 'F' as a list
+big_f_labels = np.compress(np.array(big_f).squeeze(), train['labels'], axis=0)
+# selecting all 'F' images out
+big_f_data = np.compress(np.array(big_f).squeeze(), train['features'], axis=0)
+```
+
+To generate augmented data for these three classes, it is as simple as calling the `enhance_gamma` function on each of these data arrays and concatenating to the training data and labels set.
+
+```
+gamma1 = 0.33  # dull the image
+gamma2 = 2.0   # Make the image brighter
 
 
-Refer to imbalance in images. See if we can create more samples by changing contrast for the few characters that are low on samples. use <https://www.tensorflow.org/versions/r2.0/api_docs/python/tf/keras/preprocessing/image/ImageDataGenerator>
+dull_q = enhance_gamma(q_data, gamma1)  # makes the image duller
+bright_q = enhance_gamma(q_data, gamma2)  # makes the image brighter / higher luminosity
 
-## Mobile Optimization Part I
+dull_small_f = enhance_gamma(small_f_data, gamma1)
+bright_small_f = enhance_gamma(small_f_data, gamma2)
 
-Show how to save and convert to mobile format. talk about building object detection to read lines of text from camera.
+dull_big_f = enhance_gamma(big_f_data, gamma1)
+bright_big_f = enhance_gamma(big_f_data, gamma2)
+```
 
-## Object Detection / Landmark using CNN? (check what yolo uses)
+This will result in 29,198 additional rows of data to be added for training. Concatenate these adjusted rows to the training data set like so:
+
+```
+gamma_train = np.concatenate((train['features'], dull_q.squeeze(), bright_q.squeeze()))
+gamma_train_labels = np.concatenate((train['labels'], q_labels, q_labels))
+
+gamma_train = np.concatenate((gamma_train, dull_small_f.squeeze(), bright_small_f.squeeze()))
+gamma_train_labels = np.concatenate((gamma_train_labels, small_f_labels, small_f_labels))
+
+gamma_train = np.concatenate((gamma_train, dull_big_f.squeeze(), bright_big_f.squeeze()))
+gamma_train_labels = np.concatenate((gamma_train_labels, big_f_labels, big_f_labels))
+
+# normalize the data and convert labels to one hot encoded
+gamma_train_norm = keras.utils.normalize(gamma_train)
+
+# one hot encode training labels
+one_hot_gamma_train_labels = tf.one_hot(gamma_train_labels, 47)
+```
+
+The same network that was used to train with batchnorm is trained agin for 15 epochs. Result of this training is that accuracy has moved to 90.81% from 90.74% after adding batchnorm.
+
+Now that you are well aware of the complexity of training CNNs, lets move to the next part - converting this model into a mobile optimized version. These mobile optimized models can be included as part of the mobile application and allow inferencing on the mobile device. After that, we will review another technique for adding models into mobile app using built in state-of-the-art models provided by _MLKit_.
+
+## Mobile Optimization
+
+Thus far, the CNN model has been trained and tested on a desktop or a server. This model needs to run on a mobile device. Chapter 3 and 4 cover specific ways to optimize models for mobile use. TensorFlow includes a mechanism to convert models to _TFLite_. The section will show how to use basic ways to convert into a mobile model. First, the trained model needs to be saved to disk. Though this is not a required step, it creates a version of the trained model on disk. It is especially a good idea to baseline models as more complicated models will take longer and longer time to train, and one wouldn't want to lose out the results of these trainings. Code for this section can be found in the iPython notebook's _Saving as a Mobile Model_ section. Saving the model is really easy.
+
+```
+# lets save the last trained model using batch normalization and data augmentation
+cnn2_do_bn_dataug.save("./models/mobile_cnn_model.h5")
+```
+
+This will save the model in a `models` directory under `Chap5` directory. This can changed to a location of your choice. After the model is saved, it can be loaded in and converted into a mobile optimized version very simply. Note that TensorFlow does a lot of the heavy lifting for this.
+
+- TODO: Update after release of TF2.0
+- TODO: Get Aaditya or Vikram to update this section with mobile specific optimizations here
+
+```
+# TODO: works on TF nightly, not on TF 2.0-alpha
+converter = tf.lite.TFLiteConverter.from_keras_model_file("./models/mobile_cnn_model.h5")
+tflite_model = converter.convert()
+open("./models/converted_cnn_bn_model.tflite", "wb").write(tflite_model)
+```
+
+This is almost trivial. this `tflite` can be included with the source code for a mobile application on both iOS and Android platforms.
+
+Thus far, we have built a model that can detect letters and numbers from a 28x28 image. To recognize a piece of text in an image, we need to detect the location of the text in the picture and seperate the possible letters and numbers. This problem is called landmark detection or object detection in general. It has a lot of different applications from building Snapchat-like filters to replace parts of the face to reading menus. This is covered in the next part.
+
+## Object Detection / Landmark Detection with MLKit
 
 Check from this article: <https://blog.netcetera.com/face-recognition-using-one-shot-learning-a7cf2b91e96c> see if we can isolate characters from a line of text.
 
@@ -681,3 +815,5 @@ Check from this article: <https://blog.netcetera.com/face-recognition-using-one-
 3. Compare the confusion matrix from the Jupyter notebook for the first CNN model with Fig 15 from Chapter 1\. Do you see any differences? Checkout the confusion between B-8 and O-0\. Would you expect these two to behave differently? Why or why not?
 
 4. 20% of the units/connections were randomly dropped out. What is the effect of using different drop out values like 50%?
+
+5. In data augmentation, only new samples were added for 'q'. Try adding more samples for other letters and see if it helps accuracy. Experiment with different transforms like crops, zoom and see which give most benefit to accuracy.
