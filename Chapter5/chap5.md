@@ -5,7 +5,7 @@ Computer vision is a very exciting and challenging field. While research on comp
 - Understand key computer vision application areas
 - Explain the architecture of Convolutional Neural Networks and build examples
 - Use regularization techniques to improve generalization of models
-- Detect objects and landmarks in images
+- Detect objects in images
 - // Include page numbers for ease of reference
 
 # Technical Requirements
@@ -36,7 +36,7 @@ Interest in application of deep learning in computer vision started with massive
 
 In fact, this particular challenge has been retired since 2017 given that human level performance has been surpassed and replaced with object detection described below.
 
-EMNIST is an image classification task. We will build a better image classification model using CNNs in this chapter.
+EMNIST is an image classification task, where letters are numbers need to be identified from images. This was used in Chapter 1 to develop the first deep learning network. Now, we will build a better image classification models for EMINST using a specialized deep learning architecture, _Convolutional Neural Network_ or CNN in this chapter.
 
 ## H2 Object Detection
 
@@ -50,7 +50,7 @@ We will build an object detection network later in this chapter to detect charac
 
 ## H2: Landmark Detection or Keypoint Detection
 
-A key point or a landmark marks an important part or feature of an image. If the image is of a face, then these can be different facial features like eyebrows, eyes, nose, lips etc. Fig 5-3 shows an example from Google's MLKit. Later in this chapter, we will try to build an app that takes selfies based on how wide a person is smiling. _TODO: See if it is feasible_
+A key point or a landmark marks an important part or feature of an image. If the image is of a face, then these can be different facial features like eyebrows, eyes, nose, lips etc. Fig 5-3 shows an example from Google's MLKit.
 
 ![Figure 5-3: Facial Landmark Detection](images/chap5-face_contours.svg "Figure 5-3: Facial Landmark Detection") (Image source: <https://firebase.google.com/docs/ml-kit/detect-faces>, CC 3.0 permissive license)
 
@@ -70,7 +70,7 @@ Chapter 7 of this book is devoted to this application area and will cover it in 
 
 Objective of these types of computer vision tasks are to either compress the image to a small size and then reconstruct the high resolution image on the different device, or to take an image and increase it's resolution and level of detail at the same time. There are additional use cases in converting an image with low detail, possibly shot during low light or night scene and add detail to it. In Chapter 8, we will unsupervised networks like Generative Adversarial Network (GAN) and Auto-encoders to perform this task. Image compression is especially useful in mobile settings as it can save bandwidth for communication while not comprising on quality.
 
-Now that you have a good overview of the exciting application areas in computer vision, lets start working on the first of these - image classification. We will start with understanding Convolutional Neural Networks (CNN) architecture, and build a new classifier for EMNIST using this architecture.
+Now that you have a good overview of the exciting application areas in computer vision, let's start working on the main application - image classification. We will start with understanding Convolutional Neural Networks (CNN) architecture, and build a new classifier for EMNIST using this architecture.
 
 ## Convolutional Neural Networks for Classification
 
@@ -82,9 +82,9 @@ CNNs were inspired by the work of neurophysiologists David Hubel and Torsten Wei
 
 CNNs emulate these key properties of the visual cortex in the following ways:
 
-- Hierarchical representation: Recall from Chapter 1 that use of multiple layers in a deep learning network results in a hierarchical representation of features. This emulates the behaviour of layers of simple and complex cells. Complex cells, or units in the later layers of the network take inputs of neighbouring units for aggregation or _pooling_.
-- Convolutions for locality sensitivity or sparse interactions: In a spatial map of the image, consider a random pixel. Chances are the pixels left, right, up, down and diagonally around that pixel are highly correlated to that pixel. This property of _locality sensitivity_ is very important. Conversely, it implies that connections of all units in a layer are not connected to every unit in the successive layer. This results in _sparse interactions_. Recall that in our first EMNIST model, all the pixels were fed in to the network with no notion of similarity between adjacent or close pixels. Structure of image data allows such locality sensitivity to be exploited through _convolutions_. Convolutions are described in more detail in the next section.
-- Translation Invariance: This is a key property which allows the object to be detected to be located in different places in the image and yet be classified. Fig 5-6 shows an example of translation invariance to illustrate the concept. This property allows labels to be associated with entire images, instead of identifying the exact location of the object in the image. While this simplifies collection of data sets and training, it is crucial for the widespread success of CNNs. It enables the actual test images to differ from the training images in terms of the position of the object and still be able to detect it.
+- _Hierarchical representation_: Recall from Chapter 1 that use of multiple layers in a deep learning network results in a hierarchical representation of features. This emulates the behaviour of layers of simple and complex cells. Complex cells, or units in the later layers of the network take inputs of neighbouring units for aggregation or _pooling_.
+- _Convolutions for locality sensitivity or sparse interactions_: In a spatial map of the image, consider a random pixel. Chances are the pixels left, right, up, down and diagonally around that pixel are highly correlated to that pixel. This property of _locality sensitivity_ is very important. Conversely, it implies that connections of all units in a layer are not connected to every unit in the successive layer. This results in _sparse interactions_. Recall that in our first EMNIST model, all the pixels were fed in to the network with no notion of similarity between adjacent or close pixels. Structure of image data allows such locality sensitivity to be exploited through _convolutions_. Convolutions are described in more detail in the next section.
+- _Translation Invariance_: This is a key property which allows the object to be detected to be located in different places in the image and yet be classified. Fig 5-6 shows an example of translation invariance to illustrate the concept. This property allows labels to be associated with entire images, instead of identifying the exact location of the object in the image. While this simplifies collection of data sets and training, it is crucial for the widespread success of CNNs. It enables the actual test images to differ from the training images in terms of the position of the object and still be able to detect it.
 
 ![Figure 5-6: Translation invariance](images/chap5-translation-invariance.png "Figure 5-6: Translation Invariance")
 
@@ -615,7 +615,7 @@ TensorBoard logging and callbacks have been removed for this particular example 
 
 > TIP: If you have been following along and running these training examples, it may seem that a lot of work is being done for a very small improvements or gains. This is the hard reality of working in Deep Learning. It becomes harder and harder to squeeze performance out of the networks.
 
-## Data augmentation
+## Data Augmentation
 
 To improve the generalization ability of the model further, data augmentation can be used. Data augmentation involves synthetic creation of additional training data to further improve the accuracy of the models. These techniques are especially applicable in vision, speech or sound and video as it is relatively simple to create additional training samples. Consider an example of an app that recognizes objects in photos taken on that device. Common variations that may be observed can include different lighting conditions and contrasts, color tints, different crops and orientations amongst others. Table below shows a few illustrative examples of the types of transforms that can be done to generate or augment training data.
 
@@ -789,19 +789,17 @@ This is almost trivial. this `tflite` can be included with the source code for a
 
 Thus far, we have built a model that can detect letters and numbers from a 28x28 image. To recognize a piece of text in an image, we need to detect the location of the text in the picture and seperate the possible letters and numbers. This problem is called landmark detection or object detection in general. It has a lot of different applications from building Snapchat-like filters to replace parts of the face to reading menus. This is covered in the next part.
 
-## Object Detection / Landmark Detection with MLKit
+## Object Detection with MLKit
 
 Check from this article: <https://blog.netcetera.com/face-recognition-using-one-shot-learning-a7cf2b91e96c> see if we can isolate characters from a line of text.
 
+_TODO_: Vikram, please insert and write this section
+
 ### Detecting characters from a line of text from mobile Camera
 
-# Optional Content (Time Permitting)
-
-## Visualizing Convolutions
-
-- visualizing output of each convolutional layer
-
-### Smile Detection Selfie Taking App
+1. use MLKit demo app to detect lines of text, or words
+2. seperate characters on the word boundaries (I did some of this work)
+3. extract these images and use the EMNIST model above to detect the character. Show how to embed a custom model in an Android apps
 
 ## Questions
 
