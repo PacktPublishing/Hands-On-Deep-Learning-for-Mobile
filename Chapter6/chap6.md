@@ -67,7 +67,7 @@ The previous section outlined the basic mathematical intuition of a recursive fu
 
 ![figure 6-2: Basic RNN cell](images/chap6-rnn-unravelled.png)
 
-TThe basic cell is shown on the left. Input vector at a specific time or sequence step _t_ is multiplied by a weight vector, represented in the diagram as _U_, to generate an activation in the middle part. The key part of this architecture is the loop in this activation part. The output of a previous step is multiplied by a weight vector, denoted by _V_ in the figure, and added to the activation. This activation can be multiplied by another weight vector, represented by _W_, to produce the output of that step shown at the top. In terms of sequence or time steps, this network can be unrolled. This unrolling is virtual. However, it is represented on the right side of the figure. Mathematically, activation at time step _t_ can be represented by:
+The basic cell is shown on the left. Input vector at a specific time or sequence step _t_ is multiplied by a weight vector, represented in the diagram as _U_, to generate an activation in the middle part. The key part of this architecture is the loop in this activation part. The output of a previous step is multiplied by a weight vector, denoted by _V_ in the figure, and added to the activation. This activation can be multiplied by another weight vector, represented by _W_, to produce the output of that step shown at the top. In terms of sequence or time steps, this network can be unrolled. This unrolling is virtual. However, it is represented on the right side of the figure. Mathematically, activation at time step _t_ can be represented by:
 
 $$ a_t = Ux_t + V.a_{t-1} $$
 
