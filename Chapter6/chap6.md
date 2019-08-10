@@ -44,6 +44,20 @@ Let's see whats makes RNN special so that they can help solve such a large class
 
 # RNN Architecture
 
+RNNs are built to handle sequences and learn structure from them. RNN does that by using the output generated after processing the previous item in the sequence along with the current item in the sequence to generate the next output.
+
+Mathematically, this can be expressed like so:
+
+$$ f_t(x_t) = f(f_{t-1}(x_{t-1}), x_t; \theta) $$
+
+This equation says that to compute the output at time _t_, the output at _t-1_ is used as an input along with the input data $x_t$ at the same time step. Along with this, a set of parameters or learned weights, represented by $\theta$, are also used in computing the output. The objective of training an RNN is to learn these weights $\theta$. This particular formulation of RNN is unique. In previous examples, we have never used the output of a batch to determine the output of a future batch.
+
+Referring back to Fig 1-4, defining deep learning, the middle part of building hierarchical feature representations is performed by RNNs. There is still a need to use a classification or mapping layer at the end. However, this takes a slightly different form given that output of previous layers feeds into successive outputs. This aspect will be detailed later on in this chapter.
+
+![Figure 6-1: High Level RNN Architecture](images/chap6-rnn-architecture.png)
+
+Figure 6-1 shows how the overall architecture is adapted for CNN and RNN architectures. In Chapter 5, we saw a number of data pre-processing and augmentation techniques to make the images ready for CNN. there are specific techniques that need to be used for natural language processing (NLP) and speech domain. These will be covered in a later section in this chapter [TODO: Maybe add a reference to it]. The middle part is what makes RNN and CNN architectures unique. The next section is focussed on explaining these unique characteristics. the last part of the architecture is the mapping or classification layer. This is quite similar across network architectures, and is usually a _softmax_ layer. We have seen this layer in several examples across different chapters. Please note that softmax is appropriate for classification. If you are trying to solve a different problem, a different output layer may be needed.
+
 // Include examples, code, illustrations: explain complex concepts in clear, simple language
 
 // Address the readers pain points: Address common pain points and areas of confusion.
