@@ -132,13 +132,57 @@ The high-level solution would process the input image and find places where ther
 
 Finding an appropriate data set with images and matching text sentences can be challenging. To overcome this challenge, we will use a creative solution. This solution involves downloading a set of sentences in English, and then using a piece of code to pick out the characters from the EMNIST data set to create images of sentences synthetically.
 
-The data set that will be used for this purpose is called the _WikiSplit Dataset_. It can be downloaded from <https://github.com/google-research-datasets/wiki-split>. A copy of the test and training files are made available in the **TODO/Github**/Chapter6/data folder. Note that the `test.tsv` file is approximately 362MB unzipped, and 92MB zipped. The zipped version is supplied for space efficiency. this can be unzipped and expanded with any program, or with
+The data set that will be used for this purpose is called the _WikiSplit Dataset_. It can be downloaded from <https://github.com/google-research-datasets/wiki-split>. A copy of the test and training files are made available in the `**TODO/Github**/Chapter6/websplit` folder. Note that the `test.tsv` file is approximately 362MB unzipped, and 92MB zipped. The zipped version is supplied for space efficiency. this can be unzipped and expanded with any program, or with
 
 `$ unzip test.tsv.zip`
 
 from the command line on a unix machine.
 
-This data set has a primary sentence and multiple split up sentences which are edits of the original sentence. The data is in tab separated files, with two columns. The first column is the original sentence. Second column has the split up sentences, each separated by `<::::>`. There are 989,944 original sentences in the training set and 5,000 sentence in the test set. For purposes of this exercise, only the split up sentences will be used, as they are usually shorter in length and suit out purpose better.
+This data set has a primary sentence and multiple split up sentences which are edits of the original sentence. The data is in tab separated files, with two columns. The first column is the original sentence. Second column has the split up sentences, each separated by `<::::>`. There are 989,944 original sentences in the training set and 5,000 sentence in the test set. For purposes of this exercise, only the split up sentences will be used, as they are usually shorter in length and suit our purpose better.
+
+Code for this example is in the `TODO/Github/Chapter6/reading-sentences.ipynb` notebook file. First steps is to load the test samples and use the split sentences. This is shown in the code below:
+
+```python
+raw_sentences = []  # empty list to store sentences
+with open("websplit/test.tsv", "r") as f:
+    reader = csv.reader(f, delimiter='\t')  # read a tsv file
+    for row in reader:
+        # print("Original Sentence:", row[0])      # Uncomment to view data
+        # print("Split sentences", row[1].split("<::::>"))
+        # print("\n")
+
+        raw_sentences.extend(row[1].split("<::::>"))
+print("Total Sentences: ", len(raw_sentences))
+```
+
+This should result in 1000 sentences being loaded. A few samples should be inspected to ensure everything loaded properly. It can be seen that the sentences have punctuation, but our EMNIST data set doesn't have an punctuations. So, these need to be cleaned out like so:
+
+```python
+# As we see there are lots of punctuations which we dont have in EMNIST, so we are going to remove them
+sentences = []
+table = str.maketrans({key: None for key in string.punctuation})  # translation table
+
+for sentence in raw_sentences:
+    clean_sentence = sentence.translate(table)  # remove punctuation
+    sentences.append(clean_sentence)  # add to clean sentences
+
+print(sentences[99], '\n', raw_sentences[99])
+```
+
+This piece of code also shows one sample with and without punctuation.
+
+Next step is to load in the EMINST data. Helper functions developed in Chapter 1 and used in Chapter 5 are used here. Feel free to review these in the IPython notebook. When building images for sentences, we would like to use randomly selected images for the same character. This requires building an index of images and the characters. Code below shows a simple way to construct this:
+
+```python
+image_index = {}  # where key is the char and value is a list of IDs
+for idx, code in enumerate(train['labels'].tolist()):
+    char = mappings[code]
+    if char in image_index:
+        # this character already exists
+        image_index[char].append(idx)  # append index
+    else:
+        image_index[char] = [idx]  # initiate list with 1 item
+```
 
 // Include examples, code, illustrations: explain complex concepts in clear, simple language
 
