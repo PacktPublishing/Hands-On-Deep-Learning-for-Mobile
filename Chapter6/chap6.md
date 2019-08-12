@@ -39,6 +39,8 @@ The concept of modeling sequences is a very important and powerful one. It can b
 
   <magenta.tensorflow.org>.</magenta.tensorflow.org>
 
+- Autocomplete: This application is one most people are familiar with. Commonly, mobile phone apps give suggestions for completing the word being typed as a part of the sentence. ![Figure 6-1: Autocomplete example. Source: Madsen, "Visualizing memorization in RNNs", Distill, 2019.](images/chap6-rnn-auto-complete.png) Figure 6-1: Autocomplete example. (Source: Madsen, "Visualizing memorization in RNNs", Distill, 2019.)
+
 > > Info Box: A seminal paper titled "Sequence to Sequence Learning with Neural Networks" by Ilya Sutskever, Oriol Vinyals, and Quoc Le laid the groundwork for solving a large class of problems through the sequence to sequence approach, available at: <https://arxiv.org/abs/1409.3215>. The most famous of these is language translation, also referred to as _Neural Machine Translation_ or NMT. Approaches proposed in this paper enabled Google Translate to be written in 9 months and perform better than 8-9 years of successive improvements. To read this fascinating story, this New York Times article is highly recommended: <https://www.nytimes.com/2016/12/14/magazine/the-great-ai-awakening.html>
 
 Let's see whats makes RNN special so that they can help solve such a large class of important problems.
@@ -55,17 +57,17 @@ This equation says that to compute the output at time _t_, the output at _t-1_ i
 
 Referring back to Fig 1-4, defining deep learning, the middle part of building hierarchical feature representations is performed by RNNs. There is still a need to use a classification or mapping layer at the end. However, this takes a slightly different form given the output of previous layers feeds into successive outputs. This aspect will be detailed later on in this chapter.
 
-![Figure 6-1: High-Level RNN Architecture](images/chap6-rnn-architecture.png)
+![Figure 6-2: High-Level RNN Architecture](images/chap6-rnn-architecture.png) Figure 6-2: High-Level RNN Architecture
 
-Figure 6-1 shows how the overall architecture is adapted for CNN and RNN architectures. In Chapter 5, we saw several data pre-processing and augmentation techniques to make the images ready for CNN. There are specific techniques that need to be used for natural language processing (NLP) and speech domain. These will be covered in a later section in this chapter [TODO: Maybe add a reference to it].
+Figure 6-2 shows how the overall architecture is adapted for CNN and RNN architectures. In Chapter 5, we saw several data pre-processing and augmentation techniques to make the images ready for CNN. There are specific techniques that need to be used for natural language processing (NLP) and speech domain. These will be covered in a later section in this chapter [TODO: Maybe add a reference to it].
 
 The middle part is what makes RNN and CNN architectures unique. The next section is focussed on explaining these unique characteristics. The last part of the architecture is the mapping or classification layer. This is quite similar across network architectures and is usually a _softmax_ layer. We have seen this layer in several examples across different chapters. Please note that softmax is appropriate for classification. If you are trying to solve a different problem, a different output layer may be needed.
 
 ## RNN Building Blocks
 
-The previous section outlined the basic mathematical intuition of a recursive function that is a simplification of the RNN building block. Figure 6-2 represents a few time steps and also adds details to show different weights used for computation for a basic RNN building block or cell.
+The previous section outlined the basic mathematical intuition of a recursive function that is a simplification of the RNN building block. Figure 6-3 represents a few time steps and also adds details to show different weights used for computation for a basic RNN building block or cell.
 
-![figure 6-2: Basic RNN cell](images/chap6-rnn-unravelled.png)
+![figure 6-3: Basic RNN cell](images/chap6-rnn-unravelled.png) Figure 6-3: Basic RNN cell
 
 The basic cell is shown on the left. Input vector at a specific time or sequence step _t_ is multiplied by a weight vector, represented in the diagram as _U_, to generate an activation in the middle part. The key part of this architecture is the loop in this activation part. The output of a previous step is multiplied by a weight vector, denoted by _V_ in the figure, and added to the activation. This activation can be multiplied by another weight vector, represented by _W_, to produce the output of that step shown at the top. In terms of sequence or time steps, this network can be unrolled. This unrolling is virtual. However, it is represented on the right side of the figure. Mathematically, activation at time step _t_ can be represented by:
 
@@ -88,9 +90,55 @@ Two specific RNN cell designs mitigate these problems: Long-Short Term Memory (L
 
 > TIP: Training RNNs is a very complicated process fraught with many frustrations. Modern tools such as TensorFlow do a great job of managing the complexity and reducing the pain to a great extent. However, training RNNs still is a challenging task. But the rewards of getting it right are well worth it.
 
-### Long-Short Term Memory (LSTM) cells
+### Long Short Term Memory (LSTM) Networks
+
+Long Short Term Memory Networks were proposed in 1997, and improved upon and popularized by many researchers. They are widely used today for a variety of tasks and produce amazing results.
+
+LSTM has four main parts:
+
+- Cell Value or memory of the network, also referred to as the cell, stores accumulated knowledge
+- Input Gate that controls how much of the input is used in computing the new cell value
+- Output gate determines how much of the cell value is used in the output
+- Forget gate determines how much of the current cell value is used for updating the cell value
+
+These are shown in the figure below. ![Figure 6-4: LSTM Architecture (Source: Madsen, "Visualizing memorization in RNNs", Distill, 2019.)](images/chap6-lstm-web.svg)Figure 6-4: LSTM Cell (Source: Madsen, "Visualizing memorization in RNNs", Distill, 2019.)
 
 ### Gated Recurrent Units (GRUs)
+
+![Figure 6-5: GRU Architecture (Source: Madsen, "Visualizing memorization in RNNs", Distill, 2019.)](images/chap6-rnn-gru-web.svg)Figure 6-5: GRU Architecture (Source: Madsen, "Visualizing memorization in RNNs", Distill, 2019.)
+
+## Deep RNN
+
+what makes an RNN deep, having multiple layers
+
+- maybe cover bi-lstm
+
+## Data Preparation for sequences
+
+# Natural Language Processing using RNNs
+
+## Word Vectors
+
+- Word 2 Vectors
+- Transformer models
+
+# Recognizing Sentences with RNNs
+
+Now that we understand how RNNs work, let us continue working on the EMNIST example. In Chapter 5, a Convolutional Neural Network was developed that could recognize a character or number at a time. What if we wanted to read entire sentences at a time? An example of where this may be useful is a Google Translate type application that can read text from a mobile phone camera, and then try to translate it. Another example may be an assistive app for visually impaired people which can read out road signs aloud for them.
+
+The high-level solution would process the input image and find places where there is text, read characters using CNNs, and convert them into words and sentences using RNNs. If the desired output is translation or speech, then another RNN can be used. for purposes of this example, we will assume that first step of the solution is done. Our example will focus on having handwritten images of sentences that need to be read and converted into text.
+
+## Data Preparation
+
+Finding an appropriate data set with images and matching text sentences can be challenging. To overcome this challenge, we will use a creative solution. This solution involves downloading a set of sentences in English, and then using a piece of code to pick out the characters from the EMNIST data set to create images of sentences synthetically.
+
+The data set that will be used for this purpose is called the _WikiSplit Dataset_. It can be downloaded from <https://github.com/google-research-datasets/wiki-split>. A copy of the test and training files are made available in the **TODO/Github**/Chapter6/data folder. Note that the `test.tsv` file is approximately 362MB unzipped, and 92MB zipped. The zipped version is supplied for space efficiency. this can be unzipped and expanded with any program, or with
+
+`$ unzip test.tsv.zip`
+
+from the command line on a unix machine.
+
+This data set has a primary sentence and multiple split up sentences which are edits of the original sentence. The data is in tab separated files, with two columns. The first column is the original sentence. Second column has the split up sentences, each separated by `<::::>`. There are 989,944 original sentences in the training set and 5,000 sentence in the test set. For purposes of this exercise, only the split up sentences will be used, as they are usually shorter in length and suit out purpose better.
 
 // Include examples, code, illustrations: explain complex concepts in clear, simple language
 
