@@ -184,6 +184,52 @@ for idx, code in enumerate(train['labels'].tolist()):
         image_index[char] = [idx]  # initiate list with 1 item
 ```
 
+Now, `numpy.random.choice` can be used to select a sentence from the sentences loaded:
+
+```python
+def get_sample_sentences(num_sentence=10):
+    # Get a defined number of sentences from the data
+    return np.random.choice(sentences, num_sentence)
+```
+
+The main workhorse is sampling characters from the sentence, and the corresponding images from the EMNIST data set to construct a composite image. Let's take an example sentence 'The samples were 2 good'. Ideally, the code should generate slightly different looking sentences every time the same character is sampled. Some sample images generated are shown below.
+
+![Figure 6-XX: Samples automatically generated from EMNIST dataset](images/chap6-sentence-image-sample.png) Figure 6-XX: Samples automatically generated from EMNIST dataset
+
+Steps to produce an image given a sentence is shown below:
+
+```python
+def get_generate_image(words, chars=train['features'], index=image_index):
+    # sentence is string of char/numbers that needs to be converted into an image
+    # chars is a data set of images that need to be used to compose, usually pass in train['features'] in here
+    # index maps a character to indexes in the images, available as dictionary
+    height, width = train['features'][0].shape # height and width of each character
+    length = len(words) # total number of characters in the image
+
+    # create an empty array to store the data
+    image = np.zeros((height, width * length), np.float64)
+    pos = 0  # starting index of the character
+
+    for char in words:
+        if char is ' ':
+            pos += width # if space, move over
+        else:
+            if char in image_index:
+                idx = np.random.choice(image_index[char])  # pick a random item from all images for that char
+            else:
+                idx = np.random.choice(image_index[char.upper()])  # for some characters, there is only upper case
+            image[:, pos:(pos+width)] += chars[idx]
+            pos += width
+
+    return image
+```
+
+Our data preparation is now complete. We can generate a lot of synthetic data for our training and testing purposes. Nest step is to build a network combining CNN and RNN to recognize these sentences.
+
+## Building and Training the Network
+
+## Testing performance
+
 // Include examples, code, illustrations: explain complex concepts in clear, simple language
 
 // Address the readers pain points: Address common pain points and areas of confusion.
