@@ -150,7 +150,6 @@ with open("websplit/test.tsv", "r") as f:
         # print("Original Sentence:", row[0])      # Uncomment to view data
         # print("Split sentences", row[1].split("<::::>"))
         # print("\n")
-
         raw_sentences.extend(row[1].split("<::::>"))
 print("Total Sentences: ", len(raw_sentences))
 ```
@@ -158,18 +157,28 @@ print("Total Sentences: ", len(raw_sentences))
 This should result in 1000 sentences being loaded. A few samples should be inspected to ensure everything loaded properly. It can be seen that the sentences have punctuation, but our EMNIST data set doesn't have an punctuations. So, these need to be cleaned out like so:
 
 ```python
-# As we see there are lots of punctuations which we dont have in EMNIST, so we are going to remove them
+# As we see there are lots of punctuations which we dont have in EMNIST, so we are going to remove them,
+# and replace multiple spaces with one
+import re
+
 sentences = []
 table = str.maketrans({key: None for key in string.punctuation})  # translation table
 
 for sentence in raw_sentences:
-    clean_sentence = sentence.translate(table)  # remove punctuation
-    sentences.append(clean_sentence)  # add to clean sentences
+    # remove punctuation and non-ascii characters
+    clean_sentence = re.sub('  +', ' ', sentence.translate(table)).\
+                        encode("ascii", 'ignore').decode()  
+    sentences.append(clean_sentence.strip())  # add to clean sentences
 
-print(sentences[99], '\n', raw_sentences[99])
+print(sentences[99], '\n', raw_sentences[99])  # to verify
 ```
 
-This piece of code also shows one sample with and without punctuation.
+This piece of code also shows one cleansed sample and it's original. The output should look like so:
+
+```
+He was was arrested and booked on charges of first degree murder and first degree robbery
+  He was was arrested and booked on charges of first - degree murder and first - degree robbery .
+```
 
 Next step is to load in the EMINST data. Helper functions developed in Chapter 1 and used in Chapter 5 are used here. Feel free to review these in the IPython notebook. When building images for sentences, we would like to use randomly selected images for the same character. This requires building an index of images and the characters. Code below shows a simple way to construct this:
 
@@ -215,9 +224,11 @@ def get_generate_image(words, chars=train['features'], index=image_index):
             pos += width # if space, move over
         else:
             if char in image_index:
-                idx = np.random.choice(image_index[char])  # pick a random item from all images for that char
+                # pick a random item from all images for that char
+                idx = np.random.choice(image_index[char])  
             else:
-                idx = np.random.choice(image_index[char.upper()])  # for some characters, there is only upper case
+                # for some characters, there is only upper case
+                idx = np.random.choice(image_index[char.upper()])  
             image[:, pos:(pos+width)] += chars[idx]
             pos += width
 
