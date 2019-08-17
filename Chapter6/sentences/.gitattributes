@@ -1,4 +1,0 @@
-test_images.npy filter=lfs diff=lfs merge=lfs -text
-test_labels.npy filter=lfs diff=lfs merge=lfs -text
-train_images.npy filter=lfs diff=lfs merge=lfs -text
-train_labels.npy filter=lfs diff=lfs merge=lfs -text
