@@ -18,7 +18,7 @@ This chapter uses Python, TensorFlow 2.0, Jupyter Notebooks for building and tra
 
 <github-repo>/Chapter6/</github-repo>
 
-For the mobile application pieces, an android-based mobile app will be built. It will be developed using Android Studio running on MacOS 10.13.6 or above. The models developed will be converted for mobile use as demonstrated in previous chapters, using TensorFlow Lite. Further, MLKit, part of Firebase, will be used to put the trained model into the app.
+A new Python library for managing filesystem and paths called `pathlib` will be used in this chapter. This can be installed using `pip install pathlib` from the command line in your virtual environment. For the mobile application pieces, an android-based mobile app will be built. It will be developed using Android Studio running on MacOS 10.13.6 or above. The models developed will be converted for mobile use as demonstrated in previous chapters, using TensorFlow Lite. Further, MLKit, part of Firebase, will be used to put the trained model into the app.
 
 // list technologies and installations required here.
 
@@ -235,7 +235,61 @@ def get_generate_image(words, chars=train['features'], index=image_index):
     return image
 ```
 
-Our data preparation is now complete. We can generate a lot of synthetic data for our training and testing purposes. Nest step is to build a network combining CNN and RNN to recognize these sentences.
+Our data preparation is now complete. We can generate a lot of synthetic data for our training and testing purposes. After that, we need build a network combining CNN and RNN to recognize these sentences. Here is a simple code solution to generate multiple training and test images and labels.
+
+```python
+train_sentences = sentences[:9000]
+test_sentences = sentences[9000:]
+
+# Lets assume that for each training sample, 2 variants will be generated
+
+def generate_sentences(texts, chars,
+                           index, num_variants=2, max_length=32):
+    # this method takes input text lines, character samples and labels
+    # and generates images. It can generate multiple images per sentence
+    # as controlled by num_variants parameter. max_length parameter
+    # ensures that all sentences are the same length
+
+    # total number of samples to generate
+    num_samples = len(texts) * num_variants
+    height, width = chars[0].shape  # shape of image
+
+    # setup empty array of the images
+    images = np.zeros((num_samples, height, width * max_length), np.float64)
+    labels = []
+
+    for i, item in enumerate(texts):
+        padded_item = item[0:max_length] if (len(item) > max_length) else item.ljust(max_length, ' ')
+
+        for v in range(num_variants):
+            img = get_generated_image(padded_item, chars, index)
+            images[i*num_variants+v, :, :] += img
+            labels.append(padded_item)
+
+    return images, labels
+```
+
+This can be called with different data from the sentence data base and EMNIST data to generate test and training data. You can see that the list of sentences was split at the top of the previous code listing. Now, to generate the test and training data, the code would look like:
+
+```python
+train_images, train_labels = generate_sentences(train_sentences, train['features'], image_index)
+test_images, test_labels = generate_sentences(test_sentences, train['features'], image_index)
+```
+
+This is an expensive, time consuming operation. These files should be stored so that this step doesn't have to be repeated. This is shown in the code below.
+
+```python
+# Now to save these models for easy loading
+pp = pathlib.Path('.') / 'sentences'
+pp.mkdir(exist_ok=True)  # create the directory
+
+np.save(pp / 'train_images', train_images)
+np.save(pp / 'test_images', test_images)
+np.save(pp / 'train_labels', train_labels)
+np.save(pp / 'test_labels', test_labels)
+```
+
+We have provided these generated files as part of the GitHub repository. Please not that you will need to use `git lfs` to get them as they are large files. If you followed instructions from Chapter 1, this is should already be installed for you. These generated files are in the `<github>/Chapter6/sentences` folder.
 
 ## Building and Training the Network
 
