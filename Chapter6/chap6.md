@@ -291,13 +291,29 @@ np.save(pp / 'test_labels', test_labels)
 
 We have provided these generated files as part of the GitHub repository. Please not that you will need to use `git lfs` to get them as they are large files. If you followed instructions from Chapter 1, this is should already be installed for you. These generated files are in the `<github>/Chapter6/sentences` folder.
 
+> TIP/WARNING: This files are approximately 233 MB in size. Upon unzipping, they will take approximately 3.8GB on disk. Please be mindful of your network usage and disk space needs.
+
 ## Building and Training the Network
+
+To solve this problem, we need a convolutional neural architecture to featurize the image and a RNN architecture to convert the characters read into sentences. For the CNN, we are going to use the classic LeNet5 architecture. This paper was published by Yann LeCun in 1998 and one of the best performing architectures for recognizing digits and characters for a long time (till advent of GPUs). This paper can be accessed from `http://vision.stanford.edu/cs598_spring07/papers/Lecun98.pdf`. For the RNN network, an LSTM based architecture will be used.
+
+### LeNet5 CNN
+
+LeNet5 is a 7 layer architecture, as shown in the figure below.
+
+[[insert diagram here ]]
+
+### LSTM based RNN
 
 ## Testing performance
 
 // Include examples, code, illustrations: explain complex concepts in clear, simple language
 
 // Address the readers pain points: Address common pain points and areas of confusion.
+
+## Optimizing for Mobile
+
+TBD: Get Aditya or Vikram to help out
 
 ## H2 - Subtopic B // Add explanation/essential concepts
 
